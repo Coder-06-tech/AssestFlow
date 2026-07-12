@@ -17,7 +17,8 @@ import {
   ShieldCheck, 
   BadgeHelp, 
   Bell,
-  Settings
+  Settings,
+  Info
 } from 'lucide-react';
 import { DepartmentModal, CategoryModal, EmployeeModal } from '../components/org/orgModals';
 import DataTable from '../components/common/DataTable';
@@ -321,12 +322,20 @@ const OrgSetup = () => {
           header: 'Name & Email',
           render: (row) => (
             <div className="flex items-center gap-3">
-              <div className="h-9 w-9 rounded-full bg-slate-100 text-indigo-600 border border-slate-200/80 flex items-center justify-center font-bold text-xs shadow-inner uppercase shrink-0">
-                {row.name.split(' ').map(n => n[0]).join('')}
-              </div>
+              {row.profilePhoto ? (
+                <img 
+                  src={row.profilePhoto} 
+                  alt={row.name} 
+                  className="h-9 w-9 rounded-full object-cover shrink-0 border border-slate-200" 
+                />
+              ) : (
+                <div className="h-9 w-9 rounded-full bg-[#eff6ff] text-[#2563eb] border border-blue-100 flex items-center justify-center font-bold text-xs shadow-inner uppercase shrink-0">
+                  {row.name.split(' ').map(n => n[0]).join('')}
+                </div>
+              )}
               <div>
-                <span className="block font-semibold text-[#1e293b]">{row.name}</span>
-                <span className="block text-xs text-neutral-400 mt-0.5 font-medium">{row.email}</span>
+                <span className="block font-bold text-slate-800 leading-tight">{row.name}</span>
+                <span className="block text-[11px] text-slate-400 mt-0.5 font-semibold">{row.email}</span>
               </div>
             </div>
           )
@@ -334,24 +343,30 @@ const OrgSetup = () => {
         {
           header: 'Department',
           accessor: (row) => row.department ? row.department.name : 'Global / Unassigned',
-          className: 'text-neutral-500 font-medium'
+          className: 'text-slate-600 font-semibold'
         },
         {
           header: 'Role',
-          render: (row) => (
-            <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-indigo-50 text-indigo-600 border border-indigo-100 uppercase tracking-wide">
-              {row.role.replace('_', ' ')}
-            </span>
-          )
+          render: (row) => {
+            const displayRole = row.designation || row.role;
+            return (
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded text-[10px] font-bold bg-[#f1f5f9] text-[#475569] border border-slate-200 uppercase tracking-wide">
+                {displayRole.replace('_', ' ')}
+              </span>
+            );
+          }
         },
         {
           header: 'Status',
-          render: (row) => (
-            <span className="inline-flex items-center gap-1.5 text-neutral-600 font-medium">
-              <span className={`h-1.5 w-1.5 rounded-full ${row.status === 'ACTIVE' ? 'bg-[#10b981]' : 'bg-neutral-400'}`} />
-              {row.status === 'ACTIVE' ? 'Active' : 'Inactive'}
-            </span>
-          )
+          render: (row) => {
+            const isActive = row.status === 'ACTIVE';
+            return (
+              <span className={`inline-flex items-center gap-1.5 font-bold text-xs ${isActive ? 'text-emerald-600' : 'text-amber-600'}`}>
+                <span className={`h-1.5 w-1.5 rounded-full ${isActive ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+                {isActive ? 'Active' : 'On Leave'}
+              </span>
+            );
+          }
         },
         {
           header: 'Actions',
@@ -360,7 +375,7 @@ const OrgSetup = () => {
           render: (row) => (
             <button
               onClick={() => { setSelectedEmp(row); setIsEmpModalOpen(true); }}
-              className="p-1.5 border border-[#e2e8f0] hover:bg-slate-100 text-neutral-500 rounded-lg transition-colors inline-flex items-center cursor-pointer"
+              className="p-1.5 border border-slate-200 hover:bg-slate-50 text-slate-400 hover:text-slate-700 rounded-lg transition-colors inline-flex items-center cursor-pointer"
             >
               <Settings className="h-4 w-4" />
             </button>
@@ -546,38 +561,38 @@ const OrgSetup = () => {
       </div>
 
       {/* Metric Cards Row */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-fade-in">
         
         {/* Total Employees */}
-        <div className="bg-white border border-[#e2e8f0] rounded-xl p-5 shadow-sm flex items-center gap-4">
-          <div className="h-12 w-12 rounded-lg bg-[#eff6ff] text-[#2563eb] flex items-center justify-center">
-            <Users className="h-6 w-6 stroke-[2]" />
+        <div className="bg-white border border-[#e2e8f0] rounded-2xl p-6 shadow-sm flex items-center gap-4 hover:shadow-md transition-shadow">
+          <div className="h-12 w-12 rounded-xl bg-[#2563eb] text-white flex items-center justify-center shadow-md">
+            <Users className="h-5.5 w-5.5 stroke-[2.2]" />
           </div>
           <div>
-            <span className="block text-xs font-bold text-neutral-400 uppercase tracking-wider">Total Employees</span>
-            <span className="text-2xl font-black text-[#1e293b] mt-0.5 block">{stats.totalEmployees.toLocaleString()}</span>
+            <span className="block text-xs font-bold text-slate-400 uppercase tracking-wider">Total Employees</span>
+            <span className="text-2xl font-black text-slate-800 mt-0.5 block">{stats.totalEmployees.toLocaleString()}</span>
           </div>
         </div>
 
         {/* Departments */}
-        <div className="bg-white border border-[#e2e8f0] rounded-xl p-5 shadow-sm flex items-center gap-4">
-          <div className="h-12 w-12 rounded-lg bg-[#eff6ff] text-[#2563eb] flex items-center justify-center">
-            <Building className="h-6 w-6 stroke-[2]" />
+        <div className="bg-white border border-[#e2e8f0] rounded-2xl p-6 shadow-sm flex items-center gap-4 hover:shadow-md transition-shadow">
+          <div className="h-12 w-12 rounded-xl bg-[#3b82f6] text-white flex items-center justify-center shadow-md">
+            <Building className="h-5.5 w-5.5 stroke-[2.2]" />
           </div>
           <div>
-            <span className="block text-xs font-bold text-neutral-400 uppercase tracking-wider">Departments</span>
-            <span className="text-2xl font-black text-[#1e293b] mt-0.5 block">{stats.departmentsCount}</span>
+            <span className="block text-xs font-bold text-slate-400 uppercase tracking-wider">Departments</span>
+            <span className="text-2xl font-black text-slate-800 mt-0.5 block">{stats.departmentsCount}</span>
           </div>
         </div>
 
         {/* Admin Users */}
-        <div className="bg-white border border-[#e2e8f0] rounded-xl p-5 shadow-sm flex items-center gap-4">
-          <div className="h-12 w-12 rounded-lg bg-[#fff7ed] text-[#ea580c] flex items-center justify-center">
-            <ShieldAlert className="h-6 w-6 stroke-[2]" />
+        <div className="bg-white border border-[#e2e8f0] rounded-2xl p-6 shadow-sm flex items-center gap-4 hover:shadow-md transition-shadow">
+          <div className="h-12 w-12 rounded-xl bg-[#ea580c] text-white flex items-center justify-center shadow-md">
+            <ShieldAlert className="h-5.5 w-5.5 stroke-[2.2]" />
           </div>
           <div>
-            <span className="block text-xs font-bold text-neutral-400 uppercase tracking-wider">Admin Users</span>
-            <span className="text-2xl font-black text-[#1e293b] mt-0.5 block">{stats.adminUsers}</span>
+            <span className="block text-xs font-bold text-slate-400 uppercase tracking-wider">Admin Users</span>
+            <span className="text-2xl font-black text-slate-800 mt-0.5 block">{stats.adminUsers}</span>
           </div>
         </div>
       </div>
@@ -591,7 +606,7 @@ const OrgSetup = () => {
         ]}
         activeTab={activeTab}
         onTabChange={handleTabChange}
-        onAddClick={handleAddClick}
+        onAddClick={null} // Hidden in tab row to match mockup precisely (uses header toolbar button)
         addButtonLabel={getAddButtonLabel()}
         helperNote={getHelperNote()}
         filters={renderFilters()}
@@ -604,6 +619,17 @@ const OrgSetup = () => {
           loadingText={`Loading ${activeTab.toLowerCase()} data...`}
         />
       </TabShell>
+
+      {/* Organizational Hierarchy info alert */}
+      <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 flex gap-3 text-left shadow-sm">
+        <Info className="text-blue-600 shrink-0 mt-0.5" size={18} />
+        <div className="flex flex-col gap-1">
+          <span className="font-bold text-blue-900 text-xs">Organizational Hierarchy</span>
+          <span className="text-[11px] text-blue-800 font-semibold leading-relaxed">
+            Changes to organization structures may take up to 10 minutes to propagate across all system modules. Roles defined here determine default access levels for asset assignments and maintenance schedules.
+          </span>
+        </div>
+      </div>
 
       {/* Modals Mounting */}
       <DepartmentModal
