@@ -54,17 +54,19 @@ const DashboardLayout = ({ children }) => {
   };
 
   const renderNavList = (items, isMobile = false) => {
-    return items.map((item) => (
-      <Link
-        key={item.name}
-        to={item.href}
-        onClick={() => isMobile && setMobileMenuOpen(false)}
-        className={`flex items-center px-3.5 py-2 rounded-xl text-sm font-semibold transition-all duration-150 group ${activeClass(item.href)}`}
-      >
-        <item.icon className="mr-3 h-4.5 w-4.5 shrink-0 stroke-[2.2] text-slate-500 group-hover:text-[#1e293b] group-[.bg-\[\#eff6ff\]]:text-[#2563eb]" />
-        <span>{item.name}</span>
-      </Link>
-    ));
+    return items
+      .filter((item) => !item.permission || hasPermission(user?.role, item.permission))
+      .map((item) => (
+        <Link
+          key={item.name}
+          to={item.href}
+          onClick={() => isMobile && setMobileMenuOpen(false)}
+          className={`flex items-center px-3.5 py-2 rounded-xl text-sm font-semibold transition-all duration-150 group ${activeClass(item.href)}`}
+        >
+          <item.icon className="mr-3 h-4.5 w-4.5 shrink-0 stroke-[2.2] text-slate-500 group-hover:text-[#1e293b] group-[.bg-\[\#eff6ff\]]:text-[#2563eb]" />
+          <span>{item.name}</span>
+        </Link>
+      ));
   };
 
   return (
