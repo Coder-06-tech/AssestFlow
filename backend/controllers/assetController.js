@@ -255,7 +255,6 @@ exports.getAssetById = async (req, res, next) => {
 
     return res.status(200).json({ success: true, data: asset });
   } catch (error) {
->>>>>>> 9f8249e2a2bc67a5d02632afe6905244da11dce0
     next(error);
   }
 };

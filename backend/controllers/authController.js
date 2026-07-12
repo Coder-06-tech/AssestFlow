@@ -249,7 +249,6 @@ exports.forgotPassword = async (req, res, next) => {
     });
 
     // Console-log the reset link as stub
-    const token = crypto.randomBytes(32).toString('hex');
     const resetUrl = `http://localhost:3001/reset-password?token=${token}`;
     console.log(`[PASSWORD RESET SYSTEM] Email: ${email}, Link: ${resetUrl}`);
 
