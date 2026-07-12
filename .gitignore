@@ -40,3 +40,8 @@ eslint-debug.log*
 # OS files
 .DS_Store
 Thumbs.db
+
+# Local mock data
+mockData.json
+**/mockData.json
+

@@ -7,7 +7,8 @@ module.exports = (schema) => {
     const result = schema.safeParse(req.body);
 
     if (!result.success) {
-      const errorMsg = result.error.errors
+      const errors = result.error.errors || result.error.issues || [];
+      const errorMsg = errors
         .map((err) => `${err.path.join('.')}: ${err.message}`)
         .join(', ');
 

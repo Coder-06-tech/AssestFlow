@@ -1,20 +1,3 @@
-import Dashboard from "./pages/Dashboard.jsx";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-
-function App() {
-  return (
-    <>
-      <Dashboard />
-      <ToastContainer
-        position="top-right"
-        autoClose={3000}
-      />
-    </>
-  );
-}
-
-export default App;
 import React from 'react';
 import { 
   BrowserRouter as Router, 
@@ -35,6 +18,8 @@ import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import DashboardStub from './pages/DashboardStub';
 import OrgSetup from './pages/OrgSetup';
+import BookingsPage from './pages/BookingsPage';
+import MaintenancePage from './pages/MaintenancePage';
 
 // Protected Route Wrapper
 const ProtectedRoute = ({ children }) => {
@@ -96,6 +81,32 @@ function App() {
               </ProtectedRoute>
             } 
           />
+
+          <Route 
+            path="/bookings" 
+            element={
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <BookingsPage />
+                </DashboardLayout>
+              </ProtectedRoute>
+            } 
+          />
+
+
+
+          <Route 
+            path="/maintenance" 
+            element={
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <MaintenancePage />
+                </DashboardLayout>
+              </ProtectedRoute>
+            } 
+          />
+
+
 
           <Route 
             path="/org-setup" 

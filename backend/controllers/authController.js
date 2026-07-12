@@ -29,6 +29,7 @@ exports.signup = async (req, res, next) => {
     const hashedPassword = await hashPassword(password);
     const user = await prisma.user.create({
       data: {
+        id: crypto.randomUUID(), // Generate UUID since schema has no default
         name,
         email,
         password: hashedPassword, // Uses password field
@@ -40,6 +41,7 @@ exports.signup = async (req, res, next) => {
     // Write audit log
     await prisma.activityLog.create({
       data: {
+        id: crypto.randomUUID(),
         userId: user.id,
         action: 'USER_SIGNUP',
         module: 'ORGANIZATION',
@@ -244,6 +246,7 @@ exports.forgotPassword = async (req, res, next) => {
     // Save token hash in database
     await prisma.passwordResetToken.create({
       data: {
+        id: crypto.randomUUID(),
         userId: user.id,
         tokenHash,
         expiresAt
@@ -301,6 +304,7 @@ exports.resetPassword = async (req, res, next) => {
     // Audit log
     await prisma.activityLog.create({
       data: {
+        id: crypto.randomUUID(),
         userId: dbToken.userId,
         action: 'PASSWORD_RESET',
         module: 'ORGANIZATION',
