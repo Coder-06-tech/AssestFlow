@@ -99,23 +99,25 @@ const DashboardLayout = ({ children }) => {
 
         {/* User profile Summary at Bottom */}
         <div className="p-4 border-t border-[#e2e8f0]">
-          <div className="flex items-center gap-3 bg-[#f1f5f9] rounded-2xl p-3 border border-slate-200/50">
+          <div className="flex items-center gap-3 bg-[#f8fafc] rounded-2xl p-3.5 p-3 border border-slate-200/50 hover:bg-[#f1f5f9] transition-all">
             {user?.profilePhoto ? (
               <img 
                 src={user.profilePhoto} 
                 alt={user.name} 
-                className="h-8.5 w-8.5 rounded-full object-cover shrink-0 border border-slate-200/50"
+                className="h-10 w-10 rounded-full object-cover shrink-0 border border-slate-200/60 shadow-sm"
               />
             ) : (
-              <div className="h-8.5 w-8.5 rounded-full bg-blue-100 text-blue-700 font-bold text-[10px] flex items-center justify-center shrink-0 border border-blue-200 font-semibold">
+              <div className="h-10 w-10 rounded-full bg-blue-100 text-blue-700 font-bold text-xs flex items-center justify-center shrink-0 border border-blue-200 shadow-sm uppercase">
                 {user?.name?.split(' ').map(n => n[0]).join('') || 'U'}
               </div>
             )}
             <div className="overflow-hidden min-w-0">
               <h4 className="text-xs font-bold text-slate-800 truncate leading-tight">{user?.name || 'Alex Sterling'}</h4>
-              <p className="text-[9px] text-slate-500 font-semibold truncate mt-0.5 capitalize">
-                {user?.designation || (user?.role === 'ADMIN' ? 'System Admin' : user?.role === 'ASSET_MANAGER' ? 'Asset Manager' : 'Ops Lead')}
-              </p>
+              {user?.designation && (
+                <p className="text-[10px] text-slate-500 font-semibold truncate mt-1 capitalize leading-none">
+                  {user.designation}
+                </p>
+              )}
             </div>
             <button 
               onClick={handleLogout}
@@ -163,7 +165,11 @@ const DashboardLayout = ({ children }) => {
                 )}
                 <div>
                   <h4 className="text-sm font-bold text-[#1e293b]">{user?.name}</h4>
-                  <p className="text-xs text-neutral-500">{user?.designation || (user?.role === 'ADMIN' ? 'System Admin' : 'Employee')}</p>
+                  {user?.designation && (
+                    <p className="text-xs text-neutral-500 mt-1 capitalize leading-none">
+                      {user.designation}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
