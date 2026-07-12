@@ -427,24 +427,14 @@ const AllocationsPage = () => {
           })}
 
           {allocations.filter(a => a.status === 'ACTIVE').length === 0 ? (
-            <div className="max-w-2xl mx-auto space-y-4 py-8">
+            <div className="max-w-2xl mx-auto py-8 text-left">
               {/* Alert 1: No Active Allocations Found */}
-              <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex gap-3 text-left">
+              <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex gap-3">
                 <AlertCircle className="text-amber-550 text-amber-500 shrink-0 mt-0.5" size={18} />
                 <div className="flex flex-col gap-1">
                   <span className="font-bold text-amber-800 text-xs">No Active Allocations Found</span>
                   <span className="text-[11px] text-amber-700 font-semibold leading-relaxed">
                     There are currently no active hardware assignments in the database matching your query. Click the "+ New Allocation" button at the top to assign an available device to a custodian.
-                  </span>
-                </div>
-              </div>
-              {/* Alert 2: Real-time Auditing Active */}
-              <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 flex gap-3 text-left">
-                <CheckCircle2 className="text-blue-600 shrink-0 mt-0.5" size={18} />
-                <div className="flex flex-col gap-1">
-                  <span className="font-bold text-blue-800 text-xs">Real-time Auditing & Conflict Checks Active</span>
-                  <span className="text-[11px] text-blue-700 font-semibold leading-relaxed">
-                    The allocation engine is live. Setting assignments automatically notifies employees, records audit logs, and monitors for double-allocations or scheduling conflicts.
                   </span>
                 </div>
               </div>

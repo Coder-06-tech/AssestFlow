@@ -359,24 +359,14 @@ const AssetsPage = () => {
                     {assets.length === 0 ? (
                       <tr>
                         <td colSpan="9" className="px-6 py-12">
-                          <div className="max-w-2xl mx-auto space-y-4">
+                          <div className="max-w-2xl mx-auto text-left">
                             {/* Alert 1: No Assets Found */}
-                            <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex gap-3 text-left">
+                            <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex gap-3">
                               <AlertCircle className="text-amber-550 text-amber-500 shrink-0 mt-0.5" size={18} />
                               <div className="flex flex-col gap-1">
                                 <span className="font-bold text-amber-800 text-xs">No Assets Found in Inventory</span>
                                 <span className="text-[11px] text-amber-700 font-semibold leading-relaxed">
                                   There are no assets registered in the database matching your criteria. Get started by clicking the "+ Register Asset" button at the top right to log a new hardware item.
-                                </span>
-                              </div>
-                            </div>
-                            {/* Alert 2: Database Connectivity Live */}
-                            <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 flex gap-3 text-left">
-                              <CheckCircle2 className="text-blue-600 shrink-0 mt-0.5" size={18} />
-                              <div className="flex flex-col gap-1">
-                                <span className="font-bold text-blue-800 text-xs">System Database Connection Live</span>
-                                <span className="text-[11px] text-blue-700 font-semibold leading-relaxed">
-                                  Your local web application is actively connected to the remote Neon PostgreSQL database. Try adjusting your category or status filters to view existing items.
                                 </span>
                               </div>
                             </div>
