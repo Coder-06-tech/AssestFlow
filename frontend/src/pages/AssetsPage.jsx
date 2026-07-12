@@ -356,7 +356,7 @@ const AssetsPage = () => {
                         </td>
                       </tr>
                     ))}
-                    {filteredAssets.length === 0 && (
+                    {assets.length === 0 ? (
                       <tr>
                         <td colSpan="9" className="px-6 py-12">
                           <div className="max-w-2xl mx-auto space-y-4">
@@ -383,7 +383,16 @@ const AssetsPage = () => {
                           </div>
                         </td>
                       </tr>
-                    )}
+                    ) : filteredAssets.length === 0 ? (
+                      <tr>
+                        <td colSpan="9" className="text-center py-16 text-slate-400 italic font-semibold">
+                          <div className="flex flex-col items-center gap-1.5">
+                            <AlertCircle size={20} className="text-slate-400" />
+                            <span>No assets found matching the search/filter criteria.</span>
+                          </div>
+                        </td>
+                      </tr>
+                    ) : null}
                   </tbody>
                 </table>
               </div>

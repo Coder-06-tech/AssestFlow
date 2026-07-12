@@ -422,16 +422,15 @@ const AllocationsPage = () => {
                     </>
                   )}
                 </div>
-
               </div>
             );
           })}
 
-          {filteredAllocations.length === 0 && (
+          {allocations.filter(a => a.status === 'ACTIVE').length === 0 ? (
             <div className="max-w-2xl mx-auto space-y-4 py-8">
               {/* Alert 1: No Active Allocations Found */}
               <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex gap-3 text-left">
-                <AlertCircle className="text-amber-500 shrink-0 mt-0.5" size={18} />
+                <AlertCircle className="text-amber-550 text-amber-500 shrink-0 mt-0.5" size={18} />
                 <div className="flex flex-col gap-1">
                   <span className="font-bold text-amber-800 text-xs">No Active Allocations Found</span>
                   <span className="text-[11px] text-amber-700 font-semibold leading-relaxed">
@@ -450,7 +449,14 @@ const AllocationsPage = () => {
                 </div>
               </div>
             </div>
-          )}
+          ) : filteredAllocations.length === 0 ? (
+            <div className="bg-white border border-slate-200 rounded-2xl p-16 text-center text-slate-400 italic shadow-sm font-semibold">
+              <div className="flex flex-col items-center gap-1.5">
+                <AlertCircle size={24} className="text-slate-400" />
+                <span>No active allocations found matching your search.</span>
+              </div>
+            </div>
+          ) : null}
         </div>
       </div>
 
@@ -496,60 +502,9 @@ const AllocationsPage = () => {
               );
             })
           ) : (
-            /* Fallback Mock logs matching the mockup precisely if no DB logs exist */
-            <>
-              <div className="relative text-xs">
-                <div className="absolute -left-6 top-0.5 h-5.5 w-5.5 rounded-full bg-blue-600 border border-white flex items-center justify-center text-white shrink-0">
-                  <ArrowUpFromLine size={10} />
-                </div>
-                <div className="flex justify-between items-baseline gap-4">
-                  <div className="flex flex-col">
-                    <span className="font-bold text-slate-800">Asset Returned: MacBook Pro M1</span>
-                    <span className="text-slate-500 font-semibold mt-0.5">Returned by Sarah Connor to Storage Hub C.</span>
-                  </div>
-                  <span className="text-[10px] text-slate-400 font-bold whitespace-nowrap">2 mins ago</span>
-                </div>
-              </div>
-
-              <div className="relative text-xs">
-                <div className="absolute -left-6 top-0.5 h-5.5 w-5.5 rounded-full bg-blue-500 border border-white flex items-center justify-center text-white shrink-0">
-                  <ArrowRightLeft size={10} />
-                </div>
-                <div className="flex justify-between items-baseline gap-4">
-                  <div className="flex flex-col">
-                    <span className="font-bold text-slate-800">Ownership Transfer: Asset ASSET-882</span>
-                    <span className="text-slate-500 font-semibold mt-0.5">Transferred from Engineering to QA Dept.</span>
-                  </div>
-                  <span className="text-[10px] text-slate-400 font-bold whitespace-nowrap">45 mins ago</span>
-                </div>
-              </div>
-
-              <div className="relative text-xs">
-                <div className="absolute -left-6 top-0.5 h-5.5 w-5.5 rounded-full bg-rose-500 border border-white flex items-center justify-center text-white shrink-0">
-                  <AlertTriangle size={10} />
-                </div>
-                <div className="flex justify-between items-baseline gap-4">
-                  <div className="flex flex-col">
-                    <span className="font-bold text-slate-800">New Conflict Detected</span>
-                    <span className="text-slate-500 font-semibold mt-0.5">Asset ASSET-7729 was allocated to multiple users.</span>
-                  </div>
-                  <span className="text-[10px] text-slate-400 font-bold whitespace-nowrap">2 hours ago</span>
-                </div>
-              </div>
-
-              <div className="relative text-xs">
-                <div className="absolute -left-6 top-0.5 h-5.5 w-5.5 rounded-full bg-slate-400 border border-white flex items-center justify-center text-white shrink-0">
-                  <Plus size={10} />
-                </div>
-                <div className="flex justify-between items-baseline gap-4">
-                  <div className="flex flex-col">
-                    <span className="font-bold text-slate-800">New Allocation Created</span>
-                    <span className="text-slate-500 font-semibold mt-0.5">User Marcus Chen assigned to Logitech MX Master 3S.</span>
-                  </div>
-                  <span className="text-[10px] text-slate-400 font-bold whitespace-nowrap">Yesterday, 4:30 PM</span>
-                </div>
-              </div>
-            </>
+            <div className="text-left text-slate-400 italic py-2">
+              No recent activity recorded.
+            </div>
           )}
 
         </div>
