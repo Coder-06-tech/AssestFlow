@@ -26,6 +26,7 @@ import AssetsPage from './pages/AssetsPage';
 import AllocationsPage from './pages/AllocationsPage';
 import SettingsPage from './pages/SettingsPage';
 import AssetRepository from './pages/AssetRepository';
+import Reports from './pages/Reports';
 
 // Protected Route Wrapper
 const ProtectedRoute = ({ children }) => {
