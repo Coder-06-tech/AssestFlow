@@ -127,6 +127,17 @@ function App() {
             } 
           />
 
+          <Route 
+            path="/reports" 
+            element={
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <Reports />
+                </DashboardLayout>
+              </ProtectedRoute>
+            } 
+          />
+
           {/* Fallback Redirects */}
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
