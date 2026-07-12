@@ -20,6 +20,7 @@ import DashboardStub from './pages/DashboardStub';
 import OrgSetup from './pages/OrgSetup';
 import BookingsPage from './pages/BookingsPage';
 import MaintenancePage from './pages/MaintenancePage';
+import AssetRepository from './pages/AssetRepository';
 
 // Protected Route Wrapper
 const ProtectedRoute = ({ children }) => {
@@ -93,7 +94,14 @@ function App() {
             } 
           />
 
-
+          <Route 
+            path="/assets" 
+            element={
+              <ProtectedRoute>
+                <AssetRepository />
+              </ProtectedRoute>
+            } 
+          />
 
           <Route 
             path="/maintenance" 
