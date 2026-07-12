@@ -125,6 +125,17 @@ exports.createBooking = async (req, res, next) => {
       }
     });
 
+    // Create database notification trigger
+    await prisma.notification.create({
+      data: {
+        id: crypto.randomUUID(),
+        userId: userId,
+        message: `New Resource Booking: Reserved ${resourceName} on ${date} (${startTime} - ${endTime}).`,
+        type: 'Bookings',
+        createdAt: new Date()
+      }
+    });
+
     res.status(201).json({
       success: true,
       message: 'Booking created successfully',

@@ -125,6 +125,17 @@ exports.raiseRequest = async (req, res, next) => {
       }
     });
 
+    // Create database notification trigger
+    await prisma.notification.create({
+      data: {
+        id: crypto.randomUUID(),
+        userId: userId,
+        message: `Critical Maintenance Required: Raised request for asset ${asset.name} (Priority: ${priority || 'LOW'}).`,
+        type: 'Alerts',
+        createdAt: new Date()
+      }
+    });
+
     res.status(201).json({
       success: true,
       message: 'Maintenance request raised successfully',
@@ -245,6 +256,30 @@ exports.updateRequestStatus = async (req, res, next) => {
         details: `Maintenance ticket ${requestId} status updated to ${status}.`
       }
     });
+
+    // Create database notification trigger for raising user
+    await prisma.notification.create({
+      data: {
+        id: crypto.randomUUID(),
+        userId: request.raisedById,
+        message: `Audit Schedule Confirmed: Maintenance request status updated to ${status}.`,
+        type: 'Approvals',
+        createdAt: new Date()
+      }
+    });
+
+    // Create database notification trigger for technician if assigned
+    if (technicianId) {
+      await prisma.notification.create({
+        data: {
+          id: crypto.randomUUID(),
+          userId: technicianId,
+          message: `Critical Maintenance Required: Assigned ticket for asset (Priority: ${request.priority}).`,
+          type: 'Alerts',
+          createdAt: new Date()
+        }
+      });
+    }
 
     res.status(200).json({
       success: true,

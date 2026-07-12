@@ -33,12 +33,14 @@ const maintenanceRoutes = require('./routes/maintenanceRoutes');
 const assetRoutes = require('./routes/assetRoutes');
 const seedRoutes = require('./routes/seedRoutes');
 const userRoutes = require('./routes/userRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
 
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/maintenance', maintenanceRoutes);
 app.use('/api/assets', assetRoutes);
 app.use('/api/seed', seedRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
