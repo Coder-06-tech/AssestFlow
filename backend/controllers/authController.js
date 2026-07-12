@@ -220,7 +220,33 @@ exports.me = async (req, res, next) => {
 exports.forgotPassword = async (req, res, next) => {
   try {
     const { email } = req.body;
-    const user = await prisma.user.findUnique({ where: { email } });
+
+    const user = await prisma.user.findUnique({
+      where: { email }
+    });
+
+    // Silently return success even if user not found to prevent user enumeration
+    if (!user) {
+      return res.status(200).json({
+        success: true,
+        message: 'If the email exists, a password reset link has been generated.'
+      });
+    }
+
+    // Generate token
+    const token = crypto.randomBytes(32).toString('hex');
+    const tokenHash = hashToken(token);
+    const expiresAt = new Date(Date.now() + 3600000); // 1 hour expiry
+
+    // Save token hash in database
+    await prisma.passwordResetToken.create({
+      data: {
+        id: crypto.randomUUID(),
+        userId: user.id,
+        tokenHash,
+        expiresAt
+      }
+    });
 
     // Console-log the reset link as stub
     const token = crypto.randomBytes(32).toString('hex');
@@ -372,10 +398,10 @@ exports.googleLogin = async (req, res, next) => {
     await prisma.activityLog.create({
       data: {
         id: crypto.randomUUID(),
-        userId: user.id,
-        action: 'USER_LOGIN',
-        module: 'AUTHENTICATION',
-        details: `User ${user.name} (${user.email}) logged in successfully via Google Sign-In.`
+        userId: dbToken.userId,
+        action: 'PASSWORD_RESET',
+        module: 'ORGANIZATION',
+        details: `Password reset successfully for user ${dbToken.user.email}.`
       }
     });
 

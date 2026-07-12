@@ -24,10 +24,23 @@ app.use(express.json());
 // Serve static uploads
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Mount API routes
+// Mount API routes (Auth & Org setup)
 app.use('/api/auth', authRoutes);
 app.use('/api/org', orgRoutes);
 app.use('/api/analytics', analyticsRoutes);
+
+// Mount Bookings & Operations routes
+const bookingRoutes = require('./routes/bookingRoutes');
+const maintenanceRoutes = require('./routes/maintenanceRoutes');
+const assetRoutes = require('./routes/assetRoutes');
+const seedRoutes = require('./routes/seedRoutes');
+const userRoutes = require('./routes/userRoutes');
+
+app.use('/api/bookings', bookingRoutes);
+app.use('/api/maintenance', maintenanceRoutes);
+app.use('/api/assets', assetRoutes);
+app.use('/api/seed', seedRoutes);
+app.use('/api/users', userRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

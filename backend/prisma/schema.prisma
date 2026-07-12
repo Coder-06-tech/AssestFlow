@@ -25,23 +25,40 @@ model Department {
 }
 
 model User {
-  id                                        String       @id
-  email                                     String       @unique
-  password                                  String
-  name                                      String
-  role                                      Role         @default(EMPLOYEE)
-  status                                    UserStatus   @default(ACTIVE)
-  departmentId                              String?
-  createdAt                                 DateTime     @default(now())
-  updatedAt                                 DateTime     @updatedAt
-  Allocation_Allocation_allocatedByIdToUser Allocation[] @relation("Allocation_allocatedByIdToUser")
-  allocations                               Allocation[]
-  Asset                                     Asset[]
-  bookings                                  Booking[]
-  headedDepartment                          Department[] @relation("DepartmentHead")
-  Transfer_Transfer_approvedByIdToUser      Transfer[]   @relation("Transfer_approvedByIdToUser")
-  Transfer_Transfer_requestUserIdToUser     Transfer[]   @relation("Transfer_requestUserIdToUser")
-  department                                Department?  @relation(fields: [departmentId], references: [id])
+  id                                         String               @id
+  email                                      String               @unique
+  password                                   String
+  name                                       String
+  role                                       Role                 @default(EMPLOYEE)
+  status                                     UserStatus           @default(ACTIVE)
+  departmentId                               String?
+  createdAt                                  DateTime             @default(now())
+  updatedAt                                  DateTime             @updatedAt
+  ActivityLog                                ActivityLog[]
+  Allocation_Allocation_allocatedByIdToUser  Allocation[]         @relation("Allocation_allocatedByIdToUser")
+  allocations                                Allocation[]
+  Asset                                      Asset[]
+  Audit                                      Audit[]
+  AuditAsset                                 AuditAsset[]
+  bookings                                   Booking[]
+  headedDepartment                           Department[]         @relation("DepartmentHead")
+  Maintenance_Maintenance_assignedToIdToUser Maintenance[]        @relation("Maintenance_assignedToIdToUser")
+  Maintenance_Maintenance_raisedByIdToUser   Maintenance[]        @relation("Maintenance_raisedByIdToUser")
+  Notification                               Notification[]
+  resetTokens                                PasswordResetToken[]
+  Transfer_Transfer_approvedByIdToUser       Transfer[]           @relation("Transfer_approvedByIdToUser")
+  Transfer_Transfer_requestUserIdToUser      Transfer[]           @relation("Transfer_requestUserIdToUser")
+  department                                 Department?          @relation(fields: [departmentId], references: [id])
+}
+
+model PasswordResetToken {
+  id        String   @id
+  userId    String
+  tokenHash String   @unique
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Asset {
@@ -66,6 +83,7 @@ model Asset {
   User           User?         @relation(fields: [assignedToId], references: [id])
   category       Category      @relation(fields: [categoryId], references: [id])
   department     Department?   @relation(fields: [departmentId], references: [id])
+  AuditAsset     AuditAsset[]
   Maintenance    Maintenance[]
   Transfer       Transfer[]
 }
@@ -108,15 +126,18 @@ model ActivityLog {
   timestamp DateTime @default(now())
   module    String
   details   String?
+  User      User?    @relation(fields: [userId], references: [id])
 }
 
 model Audit {
-  id          String      @id
+  id          String       @id
   title       String
-  status      AuditStatus @default(PENDING)
+  status      AuditStatus  @default(PENDING)
   createdById String
-  createdAt   DateTime    @default(now())
+  createdAt   DateTime     @default(now())
   updatedAt   DateTime
+  User        User         @relation(fields: [createdById], references: [id])
+  AuditAsset  AuditAsset[]
 }
 
 model AuditAsset {
@@ -127,6 +148,9 @@ model AuditAsset {
   notes        String?
   verifiedAt   DateTime?
   verifiedById String?
+  Asset        Asset            @relation(fields: [assetId], references: [id])
+  Audit        Audit            @relation(fields: [auditId], references: [id])
+  User         User?            @relation(fields: [verifiedById], references: [id])
 }
 
 model Category {
@@ -139,17 +163,19 @@ model Category {
 }
 
 model Maintenance {
-  id           String              @id
-  assetId      String
-  raisedById   String
-  assignedToId String?
-  priority     MaintenancePriority @default(LOW)
-  status       MaintenanceStatus   @default(PENDING)
-  description  String
-  notes        String?
-  createdAt    DateTime            @default(now())
-  updatedAt    DateTime
-  Asset        Asset               @relation(fields: [assetId], references: [id])
+  id                                  String              @id
+  assetId                             String
+  raisedById                          String
+  assignedToId                        String?
+  priority                            MaintenancePriority @default(LOW)
+  status                              MaintenanceStatus   @default(PENDING)
+  description                         String
+  notes                               String?
+  createdAt                           DateTime            @default(now())
+  updatedAt                           DateTime
+  Asset                               Asset               @relation(fields: [assetId], references: [id])
+  User_Maintenance_assignedToIdToUser User?               @relation("Maintenance_assignedToIdToUser", fields: [assignedToId], references: [id])
+  User_Maintenance_raisedByIdToUser   User                @relation("Maintenance_raisedByIdToUser", fields: [raisedById], references: [id])
 }
 
 model Notification {
@@ -159,6 +185,7 @@ model Notification {
   type      String
   isRead    Boolean  @default(false)
   createdAt DateTime @default(now())
+  User      User     @relation(fields: [userId], references: [id])
 }
 
 model Transfer {
@@ -237,6 +264,12 @@ enum MaintenancePriority {
   LOW
   MEDIUM
   HIGH
+}
+
+enum RequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }
 
 enum RequestStatus {

@@ -69,9 +69,20 @@ exports.toggleStatusSchema = z.object({
   status: z.enum(['ACTIVE', 'INACTIVE'])
 });
 
-exports.googleAuthSchema = z.object({
-  token: z.string().min(1, 'Token is required'),
-  isMock: z.boolean().optional()
+exports.createAssetSchema = z.object({
+  name: z.string().trim().min(2, 'Asset name is required'),
+  categoryId: z.string().min(1, 'Category is required'),
+  departmentId: z.string().nullable().optional(),
+  assignedToId: z.string().nullable().optional(),
+  assetTag: z.string().trim().min(1).optional(),
+  location: z.string().trim().min(1, 'Location is required'),
+  condition: z.string().trim().min(1, 'Condition is required').optional(),
+  status: z.enum(['AVAILABLE', 'ALLOCATED', 'RESERVED', 'UNDER_MAINTENANCE', 'LOST', 'RETIRED', 'DISPOSED']).optional(),
+  serialNumber: z.string().trim().optional().nullable(),
+  purchaseDate: z.union([z.string(), z.date(), z.null()]).optional(),
+  purchaseCost: z.union([z.number(), z.string()]).optional().nullable(),
+  warrantyExpiry: z.union([z.string(), z.date(), z.null()]).optional(),
+  customFields: z.record(z.any()).optional(),
+  documentPaths: z.record(z.any()).optional()
 });
-
 

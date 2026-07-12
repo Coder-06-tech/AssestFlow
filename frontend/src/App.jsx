@@ -18,7 +18,9 @@ import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import DashboardStub from './pages/DashboardStub';
 import OrgSetup from './pages/OrgSetup';
-import Reports from './pages/Reports';
+import BookingsPage from './pages/BookingsPage';
+import MaintenancePage from './pages/MaintenancePage';
+import AssetRepository from './pages/AssetRepository';
 
 // Protected Route Wrapper
 const ProtectedRoute = ({ children }) => {
@@ -80,6 +82,39 @@ function App() {
               </ProtectedRoute>
             } 
           />
+
+          <Route 
+            path="/bookings" 
+            element={
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <BookingsPage />
+                </DashboardLayout>
+              </ProtectedRoute>
+            } 
+          />
+
+          <Route 
+            path="/assets" 
+            element={
+              <ProtectedRoute>
+                <AssetRepository />
+              </ProtectedRoute>
+            } 
+          />
+
+          <Route 
+            path="/maintenance" 
+            element={
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <MaintenancePage />
+                </DashboardLayout>
+              </ProtectedRoute>
+            } 
+          />
+
+
 
           <Route 
             path="/org-setup" 
