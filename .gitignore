@@ -45,3 +45,8 @@ Thumbs.db
 mockData.json
 **/mockData.json
 
+# Temporary / Unused local files
+frontend/run_seed.js
+frontend/src/pages/ReportsPage.jsx
+
+
