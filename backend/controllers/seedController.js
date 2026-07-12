@@ -24,9 +24,9 @@ exports.seedDatabase = async (req, res, next) => {
     await prisma.maintenance.deleteMany({});
     await prisma.booking.deleteMany({});
     await prisma.allocation.deleteMany({});
+    await prisma.transfer.deleteMany({});
     await prisma.asset.deleteMany({});
-    await prisma.categoryField.deleteMany({});
-    await prisma.assetCategory.deleteMany({});
+    await prisma.category.deleteMany({});
     await prisma.activityLog.deleteMany({});
     await prisma.passwordResetToken.deleteMany({});
     await prisma.user.deleteMany({});
@@ -124,10 +124,11 @@ exports.seedDatabase = async (req, res, next) => {
     // 3. Seed Asset Categories
     const createdCats = {};
     for (const c of mockData.categories) {
-      const cat = await prisma.assetCategory.create({
+      const cat = await prisma.category.create({
         data: {
           id: crypto.randomUUID(),
-          name: c.name
+          name: c.name,
+          updatedAt: new Date()
         }
       });
       createdCats[c.name] = cat.id;
@@ -147,7 +148,8 @@ exports.seedDatabase = async (req, res, next) => {
           status: a.status,
           categoryId,
           departmentId,
-          acquisitionCost: a.acquisitionCost,
+          purchaseCost: a.acquisitionCost,
+          condition: 'Good',
           location: a.location
         }
       });
