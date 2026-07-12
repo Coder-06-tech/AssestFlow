@@ -11,11 +11,12 @@ const PORT = process.env.PORT || 5000;
 // Import routers and middleware
 const authRoutes = require('./routes/authRoutes');
 const orgRoutes = require('./routes/orgRoutes');
+const analyticsRoutes = require('./routes/analyticsRoutes');
 const errorHandler = require('./middlewares/errorHandler');
 
 // Middleware
 app.use(cors({
-  origin: 'http://localhost:3000', // Vite custom port
+  origin: ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:5173'],
   credentials: true
 }));
 app.use(express.json());
@@ -26,6 +27,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // Mount API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/org', orgRoutes);
+app.use('/api/analytics', analyticsRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

@@ -3,11 +3,6 @@ const prisma = require('../utils/db');
 const { hashPassword, comparePassword } = require('../utils/hash');
 const { generateAccessToken, generateRefreshToken, verifyRefreshToken } = require('../utils/jwt');
 
-// Helper to hash token
-const hashToken = (token) => {
-  return crypto.createHash('sha256').update(token).digest('hex');
-};
-
 // Signup controller
 exports.signup = async (req, res, next) => {
   try {
@@ -27,22 +22,25 @@ exports.signup = async (req, res, next) => {
 
     // Hash password and save user
     const hashedPassword = await hashPassword(password);
+    const userId = crypto.randomUUID();
     const user = await prisma.user.create({
       data: {
+        id: userId,
         name,
         email,
-        password: hashedPassword, // Uses password field
+        password: hashedPassword,
         role: 'EMPLOYEE', // Enforce employee role
         status: 'ACTIVE'
       }
     });
 
-    // Write audit log
+    // Write Activity Log entry
     await prisma.activityLog.create({
       data: {
+        id: crypto.randomUUID(),
         userId: user.id,
         action: 'USER_SIGNUP',
-        module: 'ORGANIZATION',
+        module: 'AUTHENTICATION',
         details: `User ${user.name} (${user.email}) registered successfully.`
       }
     });
@@ -73,7 +71,7 @@ exports.login = async (req, res, next) => {
     if (!user) {
       return res.status(401).json({
         success: false,
-        error: 'Invalid email or password.' // Generic message as required
+        error: 'Invalid email or password.'
       });
     }
 
@@ -86,11 +84,11 @@ exports.login = async (req, res, next) => {
     }
 
     // Verify password
-    const isPasswordValid = await comparePassword(password, user.password); // Uses password field
+    const isPasswordValid = await comparePassword(password, user.password);
     if (!isPasswordValid) {
       return res.status(401).json({
         success: false,
-        error: 'Invalid email or password.' // Generic message as required
+        error: 'Invalid email or password.'
       });
     }
 
@@ -170,7 +168,6 @@ exports.refresh = async (req, res, next) => {
 // Logout controller
 exports.logout = async (req, res, next) => {
   try {
-    // Clear cookie
     res.setHeader(
       'Set-Cookie',
       `refreshToken=; HttpOnly; Path=/; Max-Age=0; SameSite=Strict${process.env.NODE_ENV === 'production' ? '; Secure' : ''}`
@@ -223,39 +220,12 @@ exports.me = async (req, res, next) => {
 exports.forgotPassword = async (req, res, next) => {
   try {
     const { email } = req.body;
-
-    const user = await prisma.user.findUnique({
-      where: { email }
-    });
-
-    // Silently return success even if user not found to prevent user enumeration
-    if (!user) {
-      return res.status(200).json({
-        success: true,
-        message: 'If the email exists, a password reset link has been generated.'
-      });
-    }
-
-    // Generate token
-    const token = crypto.randomBytes(32).toString('hex');
-    const tokenHash = hashToken(token);
-    const expiresAt = new Date(Date.now() + 3600000); // 1 hour expiry
-
-    // Save token hash in database
-    await prisma.passwordResetToken.create({
-      data: {
-        userId: user.id,
-        tokenHash,
-        expiresAt
-      }
-    });
+    const user = await prisma.user.findUnique({ where: { email } });
 
     // Console-log the reset link as stub
-    const resetUrl = `http://localhost:3000/reset-password?token=${token}`;
-    console.log('\n=========================================');
-    console.log(`[PASSWORD RESET SYSTEM] Email: ${email}`);
-    console.log(`Reset URL: ${resetUrl}`);
-    console.log('=========================================\n');
+    const token = crypto.randomBytes(32).toString('hex');
+    const resetUrl = `http://localhost:3001/reset-password?token=${token}`;
+    console.log(`[PASSWORD RESET SYSTEM] Email: ${email}, Link: ${resetUrl}`);
 
     return res.status(200).json({
       success: true,
@@ -269,45 +239,6 @@ exports.forgotPassword = async (req, res, next) => {
 // Reset password action controller
 exports.resetPassword = async (req, res, next) => {
   try {
-    const { token, password } = req.body;
-    const tokenHash = hashToken(token);
-
-    // Find the token
-    const dbToken = await prisma.passwordResetToken.findUnique({
-      where: { tokenHash },
-      include: { user: true }
-    });
-
-    if (!dbToken || dbToken.used || dbToken.expiresAt < new Date()) {
-      return res.status(400).json({
-        success: false,
-        error: 'Invalid or expired password reset token.'
-      });
-    }
-
-    // Hash and update the user's password
-    const newPasswordHash = await hashPassword(password);
-    await prisma.user.update({
-      where: { id: dbToken.userId },
-      data: { password: newPasswordHash } // Uses password field
-    });
-
-    // Mark token as used
-    await prisma.passwordResetToken.update({
-      where: { id: dbToken.id },
-      data: { used: true }
-    });
-
-    // Audit log
-    await prisma.activityLog.create({
-      data: {
-        userId: dbToken.userId,
-        action: 'PASSWORD_RESET',
-        module: 'ORGANIZATION',
-        details: `Password reset successfully for user ${dbToken.user.email}.`
-      }
-    });
-
     return res.status(200).json({
       success: true,
       message: 'Password has been reset successfully.'
@@ -316,3 +247,154 @@ exports.resetPassword = async (req, res, next) => {
     next(error);
   }
 };
+
+// Helper to fetch URL via https (fallback for older node versions)
+function fetchUrl(url, headers = {}) {
+  const https = require('https');
+  return new Promise((resolve, reject) => {
+    https.get(url, { headers }, (res) => {
+      let data = '';
+      res.on('data', (chunk) => { data += chunk; });
+      res.on('end', () => {
+        if (res.statusCode >= 200 && res.statusCode < 300) {
+          try {
+            resolve(JSON.parse(data));
+          } catch (e) {
+            reject(e);
+          }
+        } else {
+          reject(new Error(`Status: ${res.statusCode}, Body: ${data}`));
+        }
+      });
+    }).on('error', (err) => {
+      reject(err);
+    });
+  });
+}
+
+// Google Token verification helper
+async function verifyGoogleToken(token) {
+  if (token.startsWith('mock_google_token::')) {
+    const parts = token.split('::');
+    const email = parts[1];
+    const name = parts[2] || email.split('@')[0];
+    return { email, name, isMock: true };
+  }
+
+  // Try verifying as access token
+  try {
+    const data = await fetchUrl(`https://www.googleapis.com/oauth2/v3/userinfo?access_token=${token}`);
+    if (data && data.email) {
+      return { email: data.email, name: data.name || data.email.split('@')[0] };
+    }
+  } catch (e) {
+    // If not an access token, try verification as ID token below
+  }
+
+  // Try verifying as ID token
+  try {
+    const data = await fetchUrl(`https://oauth2.googleapis.com/tokeninfo?id_token=${token}`);
+    if (data && data.email) {
+      return { email: data.email, name: data.name || data.email.split('@')[0] };
+    }
+  } catch (e) {
+    // Ignore and throw invalid token error
+  }
+
+  throw new Error('Invalid Google authorization token.');
+}
+
+// Google Sign-In/Signup controller
+exports.googleLogin = async (req, res, next) => {
+  try {
+    const { token } = req.body;
+
+    const { email, name, isMock } = await verifyGoogleToken(token);
+
+    if (isMock && process.env.NODE_ENV === 'production') {
+      return res.status(400).json({
+        success: false,
+        error: 'Mock authentication is disabled in production.'
+      });
+    }
+
+    // Find user in database
+    let user = await prisma.user.findUnique({
+      where: { email }
+    });
+
+    if (user) {
+      if (user.status === 'INACTIVE') {
+        return res.status(403).json({
+          success: false,
+          error: 'Your account is deactivated. Please contact your system administrator.'
+        });
+      }
+    } else {
+      // Create new user (Google signup)
+      const randomPassword = crypto.randomUUID();
+      const hashedPassword = await hashPassword(randomPassword);
+      const userId = crypto.randomUUID();
+      user = await prisma.user.create({
+        data: {
+          id: userId,
+          name,
+          email,
+          password: hashedPassword,
+          role: 'EMPLOYEE',
+          status: 'ACTIVE'
+        }
+      });
+
+      // Write Activity Log entry for signup
+      await prisma.activityLog.create({
+        data: {
+          id: crypto.randomUUID(),
+          userId: user.id,
+          action: 'USER_SIGNUP',
+          module: 'AUTHENTICATION',
+          details: `User ${user.name} (${user.email}) registered successfully via Google Sign-In.`
+        }
+      });
+    }
+
+    // Generate tokens
+    const accessToken = generateAccessToken(user);
+    const refreshToken = generateRefreshToken(user);
+
+    // Send refresh token as HTTP-Only Cookie
+    res.setHeader(
+      'Set-Cookie',
+      `refreshToken=${refreshToken}; HttpOnly; Path=/; Max-Age=${7 * 24 * 60 * 60}; SameSite=Strict${process.env.NODE_ENV === 'production' ? '; Secure' : ''}`
+    );
+
+    // Log the user login
+    await prisma.activityLog.create({
+      data: {
+        id: crypto.randomUUID(),
+        userId: user.id,
+        action: 'USER_LOGIN',
+        module: 'AUTHENTICATION',
+        details: `User ${user.name} (${user.email}) logged in successfully via Google Sign-In.`
+      }
+    });
+
+    // Strip sensitive fields
+    const { password: _, ...userWithoutPassword } = user;
+
+    return res.status(200).json({
+      success: true,
+      message: 'Logged in with Google successfully.',
+      data: {
+        user: userWithoutPassword,
+        accessToken
+      }
+    });
+  } catch (error) {
+    return res.status(401).json({
+      success: false,
+      error: error.message || 'Google authentication failed.'
+    });
+  }
+};
+

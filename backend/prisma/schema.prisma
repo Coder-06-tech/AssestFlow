@@ -1,25 +1,191 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-generator client {
-  provider = "prisma-client-js"
+model Department {
+  id                                             String       @id
+  name                                           String       @unique
+  parentId                                       String?
+  headId                                         String?
+  status                                         UserStatus   @default(ACTIVE)
+  createdAt                                      DateTime     @default(now())
+  updatedAt                                      DateTime     @updatedAt
+  assets                                         Asset[]
+  head                                           User?        @relation("DepartmentHead", fields: [headId], references: [id])
+  parent                                         Department?  @relation("DepartmentHierarchy", fields: [parentId], references: [id])
+  children                                       Department[] @relation("DepartmentHierarchy")
+  Transfer_Transfer_fromDepartmentIdToDepartment Transfer[]   @relation("Transfer_fromDepartmentIdToDepartment")
+  Transfer_Transfer_toDepartmentIdToDepartment   Transfer[]   @relation("Transfer_toDepartmentIdToDepartment")
+  employees                                      User[]
+}
+
+model User {
+  id                                        String       @id
+  email                                     String       @unique
+  password                                  String
+  name                                      String
+  role                                      Role         @default(EMPLOYEE)
+  status                                    UserStatus   @default(ACTIVE)
+  departmentId                              String?
+  createdAt                                 DateTime     @default(now())
+  updatedAt                                 DateTime     @updatedAt
+  Allocation_Allocation_allocatedByIdToUser Allocation[] @relation("Allocation_allocatedByIdToUser")
+  allocations                               Allocation[]
+  Asset                                     Asset[]
+  bookings                                  Booking[]
+  headedDepartment                          Department[] @relation("DepartmentHead")
+  Transfer_Transfer_approvedByIdToUser      Transfer[]   @relation("Transfer_approvedByIdToUser")
+  Transfer_Transfer_requestUserIdToUser     Transfer[]   @relation("Transfer_requestUserIdToUser")
+  department                                Department?  @relation(fields: [departmentId], references: [id])
+}
+
+model Asset {
+  id             String        @id
+  assetTag       String        @unique
+  name           String
+  categoryId     String
+  departmentId   String?
+  assignedToId   String?
+  location       String
+  condition      String
+  status         AssetStatus   @default(AVAILABLE)
+  serialNumber   String?
+  purchaseDate   DateTime?
+  purchaseCost   Float?
+  warrantyExpiry DateTime?
+  imagePath      String?
+  documentPaths  Json?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  allocations    Allocation[]
+  User           User?         @relation(fields: [assignedToId], references: [id])
+  category       Category      @relation(fields: [categoryId], references: [id])
+  department     Department?   @relation(fields: [departmentId], references: [id])
+  Maintenance    Maintenance[]
+  Transfer       Transfer[]
+}
+
+model Allocation {
+  id                                  String           @id
+  assetId                             String
+  userId                              String
+  allocatedById                       String
+  allocatedAt                         DateTime         @default(now())
+  returnedAt                          DateTime?
+  dueDate                             DateTime?
+  status                              AllocationStatus @default(ACTIVE)
+  conditionOnReturn                   String?
+  notes                               String?
+  createdAt                           DateTime         @default(now())
+  updatedAt                           DateTime
+  User_Allocation_allocatedByIdToUser User             @relation("Allocation_allocatedByIdToUser", fields: [allocatedById], references: [id])
+  asset                               Asset            @relation(fields: [assetId], references: [id])
+  user                                User             @relation(fields: [userId], references: [id])
+}
+
+model Booking {
+  id           String        @id
+  resourceName String
+  date         DateTime
+  startTime    String
+  endTime      String
+  userId       String
+  status       BookingStatus @default(UPCOMING)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime
+  user         User          @relation(fields: [userId], references: [id])
+}
+
+model ActivityLog {
+  id        String   @id
+  userId    String?
+  action    String
+  timestamp DateTime @default(now())
+  module    String
+  details   String?
+}
+
+model Audit {
+  id          String      @id
+  title       String
+  status      AuditStatus @default(PENDING)
+  createdById String
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime
+}
+
+model AuditAsset {
+  id           String           @id
+  auditId      String
+  assetId      String
+  status       AuditAssetStatus
+  notes        String?
+  verifiedAt   DateTime?
+  verifiedById String?
+}
+
+model Category {
+  id        String   @id
+  name      String   @unique
+  fields    Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+  assets    Asset[]
+}
+
+model Maintenance {
+  id           String              @id
+  assetId      String
+  raisedById   String
+  assignedToId String?
+  priority     MaintenancePriority @default(LOW)
+  status       MaintenanceStatus   @default(PENDING)
+  description  String
+  notes        String?
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime
+  Asset        Asset               @relation(fields: [assetId], references: [id])
+}
+
+model Notification {
+  id        String   @id
+  userId    String
+  message   String
+  type      String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model Transfer {
+  id                                               String        @id
+  assetId                                          String
+  requestUserId                                    String
+  fromDepartmentId                                 String?
+  toDepartmentId                                   String
+  approvedById                                     String?
+  status                                           RequestStatus @default(PENDING)
+  createdAt                                        DateTime      @default(now())
+  updatedAt                                        DateTime
+  User_Transfer_approvedByIdToUser                 User?         @relation("Transfer_approvedByIdToUser", fields: [approvedById], references: [id])
+  Asset                                            Asset         @relation(fields: [assetId], references: [id])
+  Department_Transfer_fromDepartmentIdToDepartment Department?   @relation("Transfer_fromDepartmentIdToDepartment", fields: [fromDepartmentId], references: [id])
+  User_Transfer_requestUserIdToUser                User          @relation("Transfer_requestUserIdToUser", fields: [requestUserId], references: [id])
+  Department_Transfer_toDepartmentIdToDepartment   Department    @relation("Transfer_toDepartmentIdToDepartment", fields: [toDepartmentId], references: [id])
 }
 
 enum Role {
-  EMPLOYEE
-  DEPARTMENT_HEAD
-  ASSET_MANAGER
   ADMIN
+  ASSET_MANAGER
+  DEPARTMENT_HEAD
+  EMPLOYEE
 }
 
 enum UserStatus {
-  ACTIVE
-  INACTIVE
-}
-
-enum DepartmentStatus {
   ACTIVE
   INACTIVE
 }
@@ -44,220 +210,37 @@ enum BookingStatus {
 enum MaintenanceStatus {
   PENDING
   APPROVED
-  REJECTED
+  ASSIGNED
   IN_PROGRESS
   RESOLVED
 }
 
-enum CategoryFieldType {
-  TEXT
-  NUMBER
-  DATE
-  BOOLEAN
+enum AllocationStatus {
+  ACTIVE
+  RETURNED
+  OVERDUE
 }
 
-model Department {
-  id        Int              @id @default(autoincrement())
-  name      String
-  status    DepartmentStatus @default(ACTIVE)
-  createdAt DateTime         @default(now())
-  updatedAt DateTime         @updatedAt
-
-  // Self relation (Parent Department)
-  parentId Int?
-  parent   Department?  @relation("DepartmentHierarchy", fields: [parentId], references: [id])
-  children Department[] @relation("DepartmentHierarchy")
-
-  // Department Head
-  headId Int?  @unique
-  head   User? @relation("DepartmentHead", fields: [headId], references: [id])
-
-  // Employees
-  employees User[]
-
-  // Assets
-  assets Asset[]
-
-  allocations Allocation[]
-
-  @@index([parentId])
-  @@index([headId])
+enum AuditAssetStatus {
+  VERIFIED
+  MISSING
+  DAMAGED
 }
 
-model User {
-  id           Int        @id @default(autoincrement())
-  name         String
-  email        String     @unique
-  passwordHash String
-  role         Role       @default(EMPLOYEE)
-  status       UserStatus @default(ACTIVE)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  departmentId Int?
-  department   Department? @relation(fields: [departmentId], references: [id])
-
-  // If this user is a Department Head
-  headedDepartment Department? @relation("DepartmentHead")
-
-  // Relations for future modules
-  allocations         Allocation[]
-  bookings            Booking[]
-  maintenanceRequests MaintenanceRequest[]
-  auditLogs           AuditLog[]
-  resetTokens         PasswordResetToken[]
-
-  @@index([departmentId])
-  @@index([role])
+enum AuditStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
 }
 
-model AssetCategory {
-  id        Int      @id @default(autoincrement())
-  name      String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  assets       Asset[]
-  customFields CategoryField[]
+enum MaintenancePriority {
+  LOW
+  MEDIUM
+  HIGH
 }
 
-model CategoryField {
-  id        Int               @id @default(autoincrement())
-  fieldName String
-  fieldType CategoryFieldType
-  required  Boolean           @default(false)
-
-  categoryId Int
-  category   AssetCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-
-  @@index([categoryId])
+enum RequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }
-
-model PasswordResetToken {
-  id        Int      @id @default(autoincrement())
-  tokenHash String
-  expiresAt DateTime
-  used      Boolean  @default(false)
-
-  userId Int
-  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-
-  @@index([userId])
-}
-
-model AuditLog {
-  id Int @id @default(autoincrement())
-
-  action     String
-  entityType String
-  entityId   Int
-
-  metadata Json?
-
-  createdAt DateTime @default(now())
-
-  userId Int
-  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([entityType])
-}
-
-model Asset {
-  id       Int    @id @default(autoincrement())
-  name     String
-  assetTag String @unique
-
-  status AssetStatus @default(AVAILABLE)
-
-  acquisitionDate DateTime?
-  acquisitionCost Float?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  categoryId Int
-  category   AssetCategory @relation(fields: [categoryId], references: [id])
-
-  departmentId Int?
-  department   Department? @relation(fields: [departmentId], references: [id])
-
-  allocations         Allocation[]
-  bookings            Booking[]
-  maintenanceRequests MaintenanceRequest[]
-
-  @@index([categoryId])
-  @@index([departmentId])
-  @@index([status])
-}
-
-model Allocation {
-  id Int @id @default(autoincrement())
-
-  allocatedAt      DateTime  @default(now())
-  expectedReturnAt DateTime?
-  returnedAt       DateTime?
-
-  assetId Int
-  asset   Asset @relation(fields: [assetId], references: [id])
-
-  userId Int?
-  user   User? @relation(fields: [userId], references: [id])
-
-  departmentId Int?
-  department   Department? @relation(fields: [departmentId], references: [id])
-
-  @@index([assetId])
-  @@index([userId])
-  @@index([departmentId])
-}
-
-model Booking {
-  id Int @id @default(autoincrement())
-
-  startTime DateTime
-  endTime   DateTime
-
-  status BookingStatus @default(UPCOMING)
-
-  assetId Int
-  asset   Asset @relation(fields: [assetId], references: [id])
-
-  userId Int
-  user   User @relation(fields: [userId], references: [id])
-
-  @@index([assetId])
-  @@index([userId])
-}
-
-model MaintenanceRequest {
-  id Int @id @default(autoincrement())
-
-  status MaintenanceStatus @default(PENDING)
-
-  createdAt  DateTime  @default(now())
-  resolvedAt DateTime?
-
-  assetId Int
-  asset   Asset @relation(fields: [assetId], references: [id])
-
-  userId Int
-  user   User @relation(fields: [userId], references: [id])
-
-  @@index([assetId])
-  @@index([userId])
-}
-
-model PasswordResetToken {
-  id        String   @id @default(uuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  tokenHash String   @unique
-  expiresAt DateTime
-  used      Boolean  @default(false)
-  createdAt DateTime @default(now())
-}
-

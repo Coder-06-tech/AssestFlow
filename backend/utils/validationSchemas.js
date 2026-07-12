@@ -1,5 +1,12 @@
 const { z } = require('zod');
 
+const nullableInt = z.preprocess((value) => {
+  if (value === '' || value === null || value === undefined) return null;
+  if (typeof value === 'number') return value;
+  const parsed = Number.parseInt(String(value), 10);
+  return Number.isNaN(parsed) ? value : parsed;
+}, z.number().int().nullable().optional());
+
 // Auth validation schemas
 exports.signupSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -24,15 +31,15 @@ exports.resetPasswordSchema = z.object({
 // Organization Validation Schemas
 exports.createDeptSchema = z.object({
   name: z.string().min(1, 'Department name is required'),
-  headId: z.string().nullable().optional(),
-  parentId: z.string().nullable().optional(),
+  headId: nullableInt,
+  parentId: nullableInt,
   status: z.enum(['ACTIVE', 'INACTIVE']).optional()
 });
 
 exports.updateDeptSchema = z.object({
   name: z.string().min(1).optional(),
-  headId: z.string().nullable().optional(),
-  parentId: z.string().nullable().optional(),
+  headId: nullableInt,
+  parentId: nullableInt,
   status: z.enum(['ACTIVE', 'INACTIVE']).optional()
 });
 
@@ -61,4 +68,10 @@ exports.promoteEmployeeSchema = z.object({
 exports.toggleStatusSchema = z.object({
   status: z.enum(['ACTIVE', 'INACTIVE'])
 });
+
+exports.googleAuthSchema = z.object({
+  token: z.string().min(1, 'Token is required'),
+  isMock: z.boolean().optional()
+});
+
 
