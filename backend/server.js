@@ -12,6 +12,7 @@ const PORT = process.env.PORT || 5000;
 const authRoutes = require('./routes/authRoutes');
 const orgRoutes = require('./routes/orgRoutes');
 const analyticsRoutes = require('./routes/analyticsRoutes');
+const auditRoutes = require('./routes/auditRoutes');
 const errorHandler = require('./middlewares/errorHandler');
 
 // Middleware
@@ -45,6 +46,7 @@ app.use('/api/seed', seedRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/allocations', allocationRoutes);
+app.use('/api/audit', auditRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

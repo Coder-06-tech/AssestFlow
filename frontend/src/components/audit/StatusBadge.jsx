@@ -1,28 +1,28 @@
+import React from 'react';
+
 function StatusBadge({ status }) {
+  let color = "bg-slate-100 text-slate-700 border-slate-200";
 
-  let color = "";
+  const upperStatus = (status || '').toUpperCase();
 
-  switch (status) {
-
-    case "Verified":
-      color = "bg-green-100 text-green-700";
+  switch (upperStatus) {
+    case "VERIFIED":
+      color = "bg-emerald-50 text-emerald-700 border-emerald-250 border-emerald-250";
       break;
-
-    case "Missing":
-      color = "bg-red-100 text-red-700";
+    case "MISSING":
+      color = "bg-rose-50 text-rose-700 border-rose-250 border-rose-250";
       break;
-
-    case "Damaged":
-      color = "bg-yellow-100 text-yellow-700";
+    case "DAMAGED":
+      color = "bg-amber-50 text-amber-700 border-amber-250 border-amber-250";
       break;
-
+    case "PENDING":
     default:
-      color = "bg-gray-100 text-gray-700";
+      color = "bg-slate-50 text-slate-600 border-slate-200";
   }
 
   return (
-    <span className={`px-3 py-1 rounded-full text-sm font-medium ${color}`}>
-      {status}
+    <span className={`px-2.5 py-0.5 border rounded-full font-bold text-[10px] uppercase tracking-wide ${color}`}>
+      {status ? status.toLowerCase() : 'Pending'}
     </span>
   );
 }
