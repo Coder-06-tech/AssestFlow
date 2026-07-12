@@ -1,27 +1,115 @@
-import { useState } from 'react'
-import { ToastContainer } from 'react-toastify'
-import 'react-toastify/dist/ReactToastify.css'
+import React from 'react';
+import { 
+  BrowserRouter as Router, 
+  Routes, 
+  Route, 
+  Navigate 
+} from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
+import { AuthProvider, useAuth } from './context/AuthContext';
+import DashboardLayout from './layouts/DashboardLayout';
+
+// Pages
+import Login from './pages/Login';
+import Signup from './pages/Signup';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
+import DashboardStub from './pages/DashboardStub';
+import OrgSetup from './pages/OrgSetup';
+
+// Protected Route Wrapper
+const ProtectedRoute = ({ children }) => {
+  const { isAuthenticated, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-neutral-950 flex items-center justify-center text-white">
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-500" />
+      </div>
+    );
+  }
+
+  return isAuthenticated ? children : <Navigate to="/login" replace />;
+};
+
+// Admin Route Wrapper
+const AdminRoute = ({ children }) => {
+  const { isAuthenticated, user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#f8fafc] flex items-center justify-center text-neutral-500">
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-500" />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (user?.role !== 'ADMIN') {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return children;
+};
 
 function App() {
   return (
-    <div className="min-h-screen bg-neutral-50 text-neutral-900 flex flex-col justify-center items-center p-6">
-      <div className="max-w-md w-full bg-white border border-neutral-200 rounded-lg shadow-sm p-8 text-center">
-        <h1 className="text-2xl font-semibold tracking-tight text-neutral-900 mb-2">AssetFlow</h1>
-        <p className="text-sm text-neutral-500 mb-6">
-          Enterprise Asset & Resource Management System. Ready for development.
-        </p>
-        <div className="flex justify-center space-x-2">
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-neutral-100 text-neutral-800 border border-neutral-200">
-            React + Vite
-          </span>
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-neutral-100 text-neutral-800 border border-neutral-200">
-            Tailwind CSS
-          </span>
-        </div>
-      </div>
-      <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} />
-    </div>
-  )
+    <AuthProvider>
+      <Router>
+        <Routes>
+          {/* Public Routes */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+
+          {/* Protected Dashboard Routes */}
+          <Route 
+            path="/dashboard" 
+            element={
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <DashboardStub />
+                </DashboardLayout>
+              </ProtectedRoute>
+            } 
+          />
+
+          <Route 
+            path="/org-setup" 
+            element={
+              <AdminRoute>
+                <DashboardLayout>
+                  <OrgSetup />
+                </DashboardLayout>
+              </AdminRoute>
+            } 
+          />
+
+          {/* Fallback Redirects */}
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        </Routes>
+      </Router>
+      <ToastContainer 
+        position="top-right" 
+        autoClose={3000} 
+        hideProgressBar={false} 
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light" // Matches the white-lavender layout theme better
+      />
+    </AuthProvider>
+  );
 }
 
-export default App
+export default App;

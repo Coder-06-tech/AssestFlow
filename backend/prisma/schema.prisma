@@ -100,6 +100,7 @@ model User {
   verifiedAssets   AuditAsset[]      @relation("Auditor")
   notifications    Notification[]
   activityLogs     ActivityLog[]
+  passwordResetTokens PasswordResetToken[]
 }
 
 model Department {
@@ -266,3 +267,14 @@ model ActivityLog {
   module    String   // e.g. "ASSETS", "BOOKINGS", "MAINTENANCE"
   details   String?
 }
+
+model PasswordResetToken {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String   @unique
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
