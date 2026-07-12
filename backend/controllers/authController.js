@@ -6,7 +6,7 @@ const { generateAccessToken, generateRefreshToken, verifyRefreshToken } = requir
 // Signup controller
 exports.signup = async (req, res, next) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password, designation } = req.body;
 
     // Check if user already exists
     const existingUser = await prisma.user.findUnique({
@@ -20,6 +20,17 @@ exports.signup = async (req, res, next) => {
       });
     }
 
+    // Determine role authorization based on designation title
+    let userRole = 'EMPLOYEE';
+    const cleanDesignation = (designation || '').toLowerCase().trim();
+    if (cleanDesignation.includes('admin')) {
+      userRole = 'ADMIN';
+    } else if (cleanDesignation.includes('manager')) {
+      userRole = 'ASSET_MANAGER';
+    } else if (cleanDesignation.includes('head')) {
+      userRole = 'DEPARTMENT_HEAD';
+    }
+
     // Hash password and save user
     const hashedPassword = await hashPassword(password);
     const userId = crypto.randomUUID();
@@ -29,7 +40,8 @@ exports.signup = async (req, res, next) => {
         name,
         email,
         password: hashedPassword,
-        role: 'EMPLOYEE', // Enforce employee role
+        role: userRole,
+        designation: designation || 'Employee',
         status: 'ACTIVE'
       }
     });

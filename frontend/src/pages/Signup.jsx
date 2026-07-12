@@ -12,11 +12,12 @@ const Signup = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [designation, setDesignation] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!name || !email || !password) {
+    if (!name || !email || !password || !designation) {
       toast.warning('Please complete all form fields.');
       return;
     }
@@ -28,7 +29,7 @@ const Signup = () => {
 
     setLoading(true);
     try {
-      await signup(name, email, password);
+      await signup(name, email, password, designation);
       toast.success('Account created successfully! Please log in.');
       navigate('/login');
     } catch (err) {
@@ -86,6 +87,25 @@ const Signup = () => {
             onChange={(e) => setEmail(e.target.value)}
             className="block w-full px-3 py-2.5 border border-neutral-200 rounded-lg text-sm text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow"
           />
+        </div>
+
+        {/* Designation */}
+        <div className="space-y-1.5">
+          <label className="block text-xs font-bold text-neutral-600 uppercase tracking-wider" htmlFor="designation">
+            Designation / Role Title
+          </label>
+          <input
+            id="designation"
+            type="text"
+            required
+            placeholder="e.g. System Admin, Asset Manager, Department Head"
+            value={designation}
+            onChange={(e) => setDesignation(e.target.value)}
+            className="block w-full px-3 py-2.5 border border-neutral-200 rounded-lg text-sm text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow"
+          />
+          <p className="text-[10px] text-slate-400 leading-normal font-medium">
+            * Enter <span className="font-bold text-slate-650 text-slate-600">"Admin"</span>, <span className="font-bold text-slate-650 text-slate-600">"Manager"</span>, or <span className="font-bold text-slate-650 text-slate-600">"Head"</span> in designation to assign the corresponding system permissions.
+          </p>
         </div>
 
         {/* Password */}
