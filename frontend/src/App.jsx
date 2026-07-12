@@ -22,6 +22,7 @@ import BookingsPage from './pages/BookingsPage';
 import MaintenancePage from './pages/MaintenancePage';
 import NotificationsPage from './pages/Notifications';
 import AuditPage from './pages/Audit';
+import AssetsPage from './pages/AssetsPage';
 
 // Protected Route Wrapper
 const ProtectedRoute = ({ children }) => {
@@ -79,6 +80,17 @@ function App() {
               <ProtectedRoute>
                 <DashboardLayout>
                   <DashboardStub />
+                </DashboardLayout>
+              </ProtectedRoute>
+            } 
+          />
+
+          <Route 
+            path="/assets" 
+            element={
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <AssetsPage />
                 </DashboardLayout>
               </ProtectedRoute>
             } 
