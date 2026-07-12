@@ -27,8 +27,10 @@ import {
   Check
 } from 'lucide-react';
 import { toast } from 'react-toastify';
+import { useAuth } from '../context/AuthContext';
 
 const AllocationsPage = () => {
+  const { user } = useAuth();
   const [allocations, setAllocations] = useState([]);
   const [availableAssets, setAvailableAssets] = useState([]);
   const [employees, setEmployees] = useState([]);
@@ -163,8 +165,18 @@ const AllocationsPage = () => {
     }
   });
 
-  // Filter based on search query
+  // Filter based on search query and user role permissions
   const filteredAllocations = activeAllocations.filter(alloc => {
+    // 1. Role-based Visibility Checks
+    if (user?.role === 'EMPLOYEE') {
+      if (alloc.userId !== user.id) return false;
+    } else if (user?.role === 'DEPARTMENT_HEAD') {
+      const matchesUserDept = alloc.user?.departmentId === user.departmentId;
+      const matchesAssetDept = alloc.asset?.departmentId === user.departmentId;
+      if (!matchesUserDept && !matchesAssetDept) return false;
+    }
+
+    // 2. Search query check
     const query = searchQuery.toLowerCase();
     const assetName = alloc.asset?.name?.toLowerCase() || '';
     const assetTag = alloc.asset?.assetTag?.toLowerCase() || '';
@@ -225,13 +237,15 @@ const AllocationsPage = () => {
             />
           </div>
 
-          <button 
-            onClick={() => { setModalType('create'); setIsModalOpen(true); }}
-            className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white rounded-xl text-xs font-semibold transition-all shadow-sm shadow-blue-500/10 cursor-pointer"
-          >
-            <Plus size={14} />
-            <span>New Allocation</span>
-          </button>
+          {['ADMIN', 'ASSET_MANAGER'].includes(user?.role) && (
+            <button 
+              onClick={() => { setModalType('create'); setIsModalOpen(true); }}
+              className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white rounded-xl text-xs font-semibold transition-all shadow-sm shadow-blue-500/10 cursor-pointer"
+            >
+              <Plus size={14} />
+              <span>New Allocation</span>
+            </button>
+          )}
 
           <button className="p-2 text-slate-500 hover:bg-slate-100 rounded-xl transition-all">
             <Bell size={18} />

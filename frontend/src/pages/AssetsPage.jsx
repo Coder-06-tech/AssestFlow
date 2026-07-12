@@ -20,8 +20,10 @@ import {
   CheckCircle2
 } from 'lucide-react';
 import { toast } from 'react-toastify';
+import { useAuth } from '../context/AuthContext';
 
 const AssetsPage = () => {
+  const { user } = useAuth();
   const [view, setView] = useState('list'); // 'list' or 'register'
   const [assets, setAssets] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -123,8 +125,19 @@ const AssetsPage = () => {
     }
   };
 
-  // Filter assets based on search query and dropdown selections
+  // Filter assets based on search query, dropdown selections and user role permissions
   const filteredAssets = assets.filter(asset => {
+    // 1. Role-based Visibility Checks
+    if (user?.role === 'EMPLOYEE') {
+      if (asset.assignedToId !== user.id) return false;
+    } else if (user?.role === 'DEPARTMENT_HEAD') {
+      // Show assets allocated to their department or assigned to users in their department
+      const matchesUserDept = asset.User?.departmentId === user.departmentId;
+      const matchesAssetDept = asset.departmentId === user.departmentId;
+      if (!matchesUserDept && !matchesAssetDept) return false;
+    }
+
+    // 2. Search & Dropdown filter checks
     const matchesSearch = 
       asset.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       asset.assetTag.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -145,7 +158,7 @@ const AssetsPage = () => {
     return matchesSearch && matchesCategory && matchesStatus && matchesDepartment;
   });
 
-  // Unique lists for filter dropdowns
+  // Unique lists for filter dropdowns based on visible items
   const categories = ['All', ...new Set(assets.map(a => a.category?.name).filter(Boolean))];
   const statuses = ['All', ...new Set(assets.map(a => a.status).filter(Boolean))];
   const departments = ['All', ...new Set(assets.map(a => a.department?.name).filter(Boolean))];
@@ -214,13 +227,15 @@ const AssetsPage = () => {
               
               <div className="h-6 w-px bg-slate-200" />
               
-              <button 
-                onClick={() => setView('register')}
-                className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white rounded-xl text-sm font-semibold transition-all shadow-sm shadow-blue-500/10 cursor-pointer"
-              >
-                <Plus size={16} />
-                <span>Register Asset</span>
-              </button>
+              {['ADMIN', 'ASSET_MANAGER'].includes(user?.role) && (
+                <button 
+                  onClick={() => setView('register')}
+                  className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white rounded-xl text-sm font-semibold transition-all shadow-sm shadow-blue-500/10 cursor-pointer"
+                >
+                  <Plus size={16} />
+                  <span>Register Asset</span>
+                </button>
+              )}
             </div>
           </div>
 
