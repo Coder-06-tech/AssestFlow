@@ -100,13 +100,21 @@ const DashboardLayout = ({ children }) => {
         {/* User profile Summary at Bottom */}
         <div className="p-4 border-t border-[#e2e8f0]">
           <div className="flex items-center gap-3 bg-[#f1f5f9] rounded-2xl p-3 border border-slate-200/50">
-            <div className="h-8.5 w-8.5 rounded-full bg-blue-100 text-blue-700 font-bold text-[10px] flex items-center justify-center shrink-0 border border-blue-200">
-              {user?.name?.split(' ').map(n => n[0]).join('') || 'U'}
-            </div>
+            {user?.profilePhoto ? (
+              <img 
+                src={user.profilePhoto} 
+                alt={user.name} 
+                className="h-8.5 w-8.5 rounded-full object-cover shrink-0 border border-slate-200/50"
+              />
+            ) : (
+              <div className="h-8.5 w-8.5 rounded-full bg-blue-100 text-blue-700 font-bold text-[10px] flex items-center justify-center shrink-0 border border-blue-200 font-semibold">
+                {user?.name?.split(' ').map(n => n[0]).join('') || 'U'}
+              </div>
+            )}
             <div className="overflow-hidden min-w-0">
               <h4 className="text-xs font-bold text-slate-800 truncate leading-tight">{user?.name || 'Alex Sterling'}</h4>
               <p className="text-[9px] text-slate-500 font-semibold truncate mt-0.5 capitalize">
-                {user?.role === 'ADMIN' ? 'System Admin' : user?.role === 'ASSET_MANAGER' ? 'Asset Manager' : 'Ops Lead'}
+                {user?.designation || (user?.role === 'ADMIN' ? 'System Admin' : user?.role === 'ASSET_MANAGER' ? 'Asset Manager' : 'Ops Lead')}
               </p>
             </div>
             <button 
@@ -142,12 +150,20 @@ const DashboardLayout = ({ children }) => {
           <div className="bg-white flex-grow flex flex-col max-w-[280px] w-full border-r border-[#e2e8f0] shadow-xl">
             <div className="p-4 border-b border-[#e2e8f0] bg-slate-50/40">
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-full bg-indigo-650 bg-blue-600 flex items-center justify-center font-bold text-white">
-                  {user?.name?.split(' ').map(n => n[0]).join('') || 'U'}
-                </div>
+                {user?.profilePhoto ? (
+                  <img 
+                    src={user.profilePhoto} 
+                    alt={user.name} 
+                    className="h-10 w-10 rounded-full object-cover border border-slate-200/50 shrink-0"
+                  />
+                ) : (
+                  <div className="h-10 w-10 rounded-full bg-indigo-650 bg-blue-600 flex items-center justify-center font-bold text-white shrink-0">
+                    {user?.name?.split(' ').map(n => n[0]).join('') || 'U'}
+                  </div>
+                )}
                 <div>
                   <h4 className="text-sm font-bold text-[#1e293b]">{user?.name}</h4>
-                  <p className="text-xs text-neutral-500">{user?.email}</p>
+                  <p className="text-xs text-neutral-500">{user?.designation || (user?.role === 'ADMIN' ? 'System Admin' : 'Employee')}</p>
                 </div>
               </div>
             </div>

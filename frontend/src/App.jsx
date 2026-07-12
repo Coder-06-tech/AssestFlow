@@ -24,6 +24,7 @@ import NotificationsPage from './pages/Notifications';
 import AuditPage from './pages/Audit';
 import AssetsPage from './pages/AssetsPage';
 import AllocationsPage from './pages/AllocationsPage';
+import SettingsPage from './pages/SettingsPage';
 
 // Protected Route Wrapper
 const ProtectedRoute = ({ children }) => {
@@ -146,6 +147,17 @@ function App() {
             element={
               <ProtectedRoute>
                 <AuditPage />
+              </ProtectedRoute>
+            } 
+          />
+
+          <Route 
+            path="/settings" 
+            element={
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <SettingsPage />
+                </DashboardLayout>
               </ProtectedRoute>
             } 
           />

@@ -320,3 +320,71 @@ exports.resetPassword = async (req, res, next) => {
     next(error);
   }
 };
+
+// Update user profile settings
+exports.updateProfile = async (req, res, next) => {
+  try {
+    const { name, email, password, profilePhoto, designation } = req.body;
+    const userId = req.user.id;
+
+    // Check if user exists
+    const user = await prisma.user.findUnique({
+      where: { id: userId }
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: 'User not found.'
+      });
+    }
+
+    const dataToUpdate = {};
+
+    if (name) dataToUpdate.name = name;
+    if (email && email !== user.email) {
+      // Check email collision
+      const collision = await prisma.user.findUnique({
+        where: { email }
+      });
+      if (collision) {
+        return res.status(400).json({
+          success: false,
+          error: 'Email is already registered.'
+        });
+      }
+      dataToUpdate.email = email;
+    }
+    if (password) {
+      dataToUpdate.password = await hashPassword(password);
+    }
+    if (profilePhoto !== undefined) dataToUpdate.profilePhoto = profilePhoto;
+    if (designation !== undefined) dataToUpdate.designation = designation;
+
+    dataToUpdate.updatedAt = new Date();
+
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: dataToUpdate,
+      include: {
+        department: {
+          select: {
+            id: true,
+            name: true
+          }
+        }
+      }
+    });
+
+    // Strip password
+    const { password: _, ...userWithoutPassword } = updatedUser;
+
+    return res.status(200).json({
+      success: true,
+      message: 'Profile updated successfully.',
+      data: userWithoutPassword
+    });
+  } catch (error) {
+    next(error);
+  }
+};

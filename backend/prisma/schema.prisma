@@ -32,6 +32,8 @@ model User {
   role                                       Role                 @default(EMPLOYEE)
   status                                     UserStatus           @default(ACTIVE)
   departmentId                               String?
+  designation                                String?
+  profilePhoto                               String?
   createdAt                                  DateTime             @default(now())
   updatedAt                                  DateTime             @updatedAt
   ActivityLog                                ActivityLog[]
