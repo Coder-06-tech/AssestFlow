@@ -155,7 +155,7 @@ function App() {
           />
 
           <Route 
-            path="/audit" 
+            path="/audits" 
             element={
               <ProtectedRoute>
                 <AuditPage />
