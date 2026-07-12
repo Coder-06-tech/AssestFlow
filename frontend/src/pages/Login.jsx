@@ -1,18 +1,86 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
 import AuthCard from '../components/AuthCard';
+import GoogleMockModal from '../components/GoogleMockModal';
 import { Eye, EyeOff, ArrowRight, Chrome, ShieldAlert, Contact, Landmark, Fingerprint } from 'lucide-react';
 
 const Login = () => {
-  const { login } = useAuth();
+  const { login, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [isGoogleModalOpen, setIsGoogleModalOpen] = useState(false);
+
+  useEffect(() => {
+    if (import.meta.env.VITE_GOOGLE_CLIENT_ID) {
+      const script = document.createElement('script');
+      script.src = 'https://accounts.google.com/gsi/client';
+      script.async = true;
+      script.defer = true;
+      document.body.appendChild(script);
+      return () => {
+        document.body.removeChild(script);
+      };
+    }
+  }, []);
+
+  const handleGoogleLoginClick = () => {
+    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+    if (clientId) {
+      if (typeof window.google === 'undefined') {
+        toast.error('Google Sign-In SDK is still loading. Please try again.');
+        return;
+      }
+      try {
+        const client = window.google.accounts.oauth2.initTokenClient({
+          client_id: clientId,
+          scope: 'https://www.googleapis.com/oauth2/v3/userinfo',
+          callback: async (tokenResponse) => {
+            if (tokenResponse && tokenResponse.access_token) {
+              setLoading(true);
+              try {
+                await loginWithGoogle(tokenResponse.access_token);
+                toast.success('Logged in with Google successfully!');
+                navigate('/dashboard');
+              } catch (err) {
+                const errMsg = err.response?.data?.error || 'Google authentication failed.';
+                toast.error(errMsg);
+              } finally {
+                setLoading(false);
+              }
+            }
+          },
+        });
+        client.requestAccessToken();
+      } catch (err) {
+        console.error('Google SSO Error:', err);
+        toast.error('Failed to initialize Google login.');
+      }
+    } else {
+      setIsGoogleModalOpen(true);
+    }
+  };
+
+  const handleSelectMockAccount = async (mockToken) => {
+    setIsGoogleModalOpen(false);
+    setLoading(true);
+    try {
+      await loginWithGoogle(mockToken);
+      toast.success('Logged in with Google successfully!');
+      navigate('/dashboard');
+    } catch (err) {
+      const errMsg = err.response?.data?.error || 'Google authentication failed.';
+      toast.error(errMsg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -130,7 +198,7 @@ const Login = () => {
         <div className="grid grid-cols-2 gap-4">
           <button
             type="button"
-            onClick={() => handleComingSoon('Google')}
+            onClick={handleGoogleLoginClick}
             className="flex justify-center items-center gap-2 py-2.5 px-4 border border-neutral-200 rounded-lg text-xs font-bold text-neutral-700 hover:bg-neutral-50 shadow-sm transition-colors"
           >
             {/* SVG G Logo */}
@@ -153,6 +221,12 @@ const Login = () => {
         </div>
 
       </form>
+
+      <GoogleMockModal
+        isOpen={isGoogleModalOpen}
+        onClose={() => setIsGoogleModalOpen(false)}
+        onSelectAccount={handleSelectMockAccount}
+      />
     </AuthCard>
   );
 };

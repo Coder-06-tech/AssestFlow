@@ -1,4 +1,5 @@
 const prisma = require('../utils/db');
+const { randomUUID } = require('crypto');
 
 // Helper for circular department hierarchy checks
 const detectCycle = async (deptId, targetParentId) => {
@@ -56,7 +57,7 @@ exports.createDepartment = async (req, res, next) => {
   try {
     const { name, headId, parentId, status } = req.body;
 
-    const existing = await prisma.department.findUnique({ where: { name } });
+    const existing = await prisma.department.findFirst({ where: { name } });
     if (existing) {
       return res.status(400).json({
         success: false,
@@ -66,6 +67,7 @@ exports.createDepartment = async (req, res, next) => {
 
     const department = await prisma.department.create({
       data: {
+        id: randomUUID(),
         name,
         headId: headId || null,
         parentId: parentId || null,
@@ -99,7 +101,7 @@ exports.updateDepartment = async (req, res, next) => {
 
     // Name collision check
     if (name && name !== current.name) {
-      const existing = await prisma.department.findUnique({ where: { name } });
+      const existing = await prisma.department.findFirst({ where: { name } });
       if (existing) {
         return res.status(400).json({
           success: false,
@@ -200,6 +202,7 @@ exports.createCategory = async (req, res, next) => {
 
     const category = await prisma.category.create({
       data: {
+        id: randomUUID(),
         name,
         fields: fields || []
       }
@@ -276,7 +279,9 @@ exports.deleteCategory = async (req, res, next) => {
       });
     }
 
-    await prisma.category.delete({ where: { id } });
+    await prisma.category.delete({
+      where: { id }
+    });
 
     return res.status(200).json({
       success: true,
@@ -352,9 +357,10 @@ exports.promoteEmployee = async (req, res, next) => {
       include: { department: { select: { id: true, name: true } } }
     });
 
-    // Write Activity Log audit entry
+    // Write Activity Log entry
     await prisma.activityLog.create({
       data: {
+        id: randomUUID(),
         userId: req.user.id, // ID of Admin who triggered this
         action: 'ROLE_PROMOTION',
         module: 'ORGANIZATION',
@@ -397,9 +403,10 @@ exports.toggleEmployeeStatus = async (req, res, next) => {
       include: { department: { select: { id: true, name: true } } }
     });
 
-    // Write Activity Log audit entry
+    // Write Activity Log entry
     await prisma.activityLog.create({
       data: {
+        id: randomUUID(),
         userId: req.user.id,
         action: 'USER_STATUS_TOGGLE',
         module: 'ORGANIZATION',

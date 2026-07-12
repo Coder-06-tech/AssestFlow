@@ -25,6 +25,7 @@ import AuditPage from './pages/Audit';
 import AssetsPage from './pages/AssetsPage';
 import AllocationsPage from './pages/AllocationsPage';
 import SettingsPage from './pages/SettingsPage';
+import AssetRepository from './pages/AssetRepository';
 
 // Protected Route Wrapper
 const ProtectedRoute = ({ children }) => {
@@ -121,6 +122,16 @@ function App() {
           />
 
           <Route 
+            path="/asset-repository" 
+            element={
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <AssetRepository />
+                </DashboardLayout>
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
             path="/maintenance" 
             element={
               <ProtectedRoute>
@@ -170,6 +181,17 @@ function App() {
                   <OrgSetup />
                 </DashboardLayout>
               </AdminRoute>
+            } 
+          />
+
+          <Route 
+            path="/reports" 
+            element={
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <Reports />
+                </DashboardLayout>
+              </ProtectedRoute>
             } 
           />
 

@@ -1,5 +1,12 @@
 const { z } = require('zod');
 
+const nullableInt = z.preprocess((value) => {
+  if (value === '' || value === null || value === undefined) return null;
+  if (typeof value === 'number') return value;
+  const parsed = Number.parseInt(String(value), 10);
+  return Number.isNaN(parsed) ? value : parsed;
+}, z.number().int().nullable().optional());
+
 // Auth validation schemas
 exports.signupSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -24,15 +31,15 @@ exports.resetPasswordSchema = z.object({
 // Organization Validation Schemas
 exports.createDeptSchema = z.object({
   name: z.string().min(1, 'Department name is required'),
-  headId: z.string().nullable().optional(),
-  parentId: z.string().nullable().optional(),
+  headId: nullableInt,
+  parentId: nullableInt,
   status: z.enum(['ACTIVE', 'INACTIVE']).optional()
 });
 
 exports.updateDeptSchema = z.object({
   name: z.string().min(1).optional(),
-  headId: z.string().nullable().optional(),
-  parentId: z.string().nullable().optional(),
+  headId: nullableInt,
+  parentId: nullableInt,
   status: z.enum(['ACTIVE', 'INACTIVE']).optional()
 });
 
@@ -60,5 +67,22 @@ exports.promoteEmployeeSchema = z.object({
 
 exports.toggleStatusSchema = z.object({
   status: z.enum(['ACTIVE', 'INACTIVE'])
+});
+
+exports.createAssetSchema = z.object({
+  name: z.string().trim().min(2, 'Asset name is required'),
+  categoryId: z.string().min(1, 'Category is required'),
+  departmentId: z.string().nullable().optional(),
+  assignedToId: z.string().nullable().optional(),
+  assetTag: z.string().trim().min(1).optional(),
+  location: z.string().trim().min(1, 'Location is required'),
+  condition: z.string().trim().min(1, 'Condition is required').optional(),
+  status: z.enum(['AVAILABLE', 'ALLOCATED', 'RESERVED', 'UNDER_MAINTENANCE', 'LOST', 'RETIRED', 'DISPOSED']).optional(),
+  serialNumber: z.string().trim().optional().nullable(),
+  purchaseDate: z.union([z.string(), z.date(), z.null()]).optional(),
+  purchaseCost: z.union([z.number(), z.string()]).optional().nullable(),
+  warrantyExpiry: z.union([z.string(), z.date(), z.null()]).optional(),
+  customFields: z.record(z.any()).optional(),
+  documentPaths: z.record(z.any()).optional()
 });
 
