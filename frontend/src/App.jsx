@@ -177,11 +177,11 @@ function App() {
           <Route 
             path="/org-setup" 
             element={
-              <AdminRoute>
+              <ProtectedRoute>
                 <DashboardLayout>
                   <OrgSetup />
                 </DashboardLayout>
-              </AdminRoute>
+              </ProtectedRoute>
             } 
           />
 

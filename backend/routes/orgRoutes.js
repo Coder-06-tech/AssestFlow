@@ -47,6 +47,6 @@ router.patch('/employees/:id/status', roleGuard('ADMIN'), validate(toggleStatusS
 // ------------------------------------------
 // METRICS STATISTICS
 // ------------------------------------------
-router.get('/stats', roleGuard('ADMIN'), orgController.getStats);
+router.get('/stats', orgController.getStats);
 
 module.exports = router;
