@@ -21,6 +21,7 @@ import OrgSetup from './pages/OrgSetup';
 import BookingsPage from './pages/BookingsPage';
 import MaintenancePage from './pages/MaintenancePage';
 import NotificationsPage from './pages/Notifications';
+import AuditPage from './pages/Audit';
 
 // Protected Route Wrapper
 const ProtectedRoute = ({ children }) => {
@@ -94,8 +95,6 @@ function App() {
             } 
           />
 
-
-
           <Route 
             path="/maintenance" 
             element={
@@ -114,6 +113,15 @@ function App() {
                 <DashboardLayout>
                   <NotificationsPage />
                 </DashboardLayout>
+              </ProtectedRoute>
+            } 
+          />
+
+          <Route 
+            path="/audit" 
+            element={
+              <ProtectedRoute>
+                <AuditPage />
               </ProtectedRoute>
             } 
           />
