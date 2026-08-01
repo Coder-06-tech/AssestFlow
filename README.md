@@ -240,9 +240,3 @@ The backend exposes routes under the /api base path.
 - The backend uses Prisma with PostgreSQL and relies on migrations for schema updates.
 - Frontend UI flows are organized around reusable components and route-based pages.
 - The project structure is modular and can be extended with deeper reporting, approvals, and integration features.
-
----
-
-## License
-
-This project is currently distributed under the ISC license.
