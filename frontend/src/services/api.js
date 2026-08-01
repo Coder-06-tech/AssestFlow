@@ -5,9 +5,14 @@ const API = axios.create({
   timeout: 10000,
 });
 
-// Request interceptor to attach Mock User headers
+// Request interceptor to attach JWT access token & Mock User headers
 API.interceptors.request.use(
   (config) => {
+    const token = localStorage.getItem('accessToken');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+
     const savedUser = localStorage.getItem('currentUser');
     if (savedUser) {
       try {
@@ -32,7 +37,7 @@ API.interceptors.request.use(
 API.interceptors.response.use(
   (response) => response,
   (error) => {
-    const message = error.response?.data?.message || error.message || 'API request failed';
+    const message = error.response?.data?.error || error.response?.data?.message || error.message || 'API request failed';
     return Promise.reject(new Error(message));
   }
 );

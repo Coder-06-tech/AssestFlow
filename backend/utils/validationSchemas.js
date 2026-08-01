@@ -87,3 +87,6 @@ exports.createAssetSchema = z.object({
   documentPaths: z.record(z.any()).optional()
 });
 
+exports.googleAuthSchema = z.object({
+  token: z.string().min(1, 'Google authorization token is required')
+});

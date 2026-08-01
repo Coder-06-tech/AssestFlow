@@ -92,13 +92,12 @@ exports.getMostUsedAssets = async (req, res, next) => {
 
     const assets = await prisma.asset.findMany({
       include: {
-        allocations: { select: { id: true } },
-        bookings: { select: { id: true } }
+        allocations: { select: { id: true } }
       }
     });
 
     const ranked = assets.map(asset => {
-      const uses = asset.allocations.length + asset.bookings.length;
+      const uses = asset.allocations.length;
       return {
         label: `${asset.name} (${asset.assetTag})`,
         metric: `${uses} uses`
@@ -126,10 +125,6 @@ exports.getIdleAssets = async (req, res, next) => {
         allocations: {
           orderBy: { allocatedAt: 'desc' },
           take: 1
-        },
-        bookings: {
-          orderBy: { date: 'desc' },
-          take: 1
         }
       }
     });
@@ -137,9 +132,7 @@ exports.getIdleAssets = async (req, res, next) => {
     const idle = [];
     assets.forEach(asset => {
       const lastAlloc = asset.allocations[0]?.allocatedAt;
-      const lastBook = asset.bookings[0]?.date;
-      
-      const lastUsed = [lastAlloc, lastBook].filter(Boolean).sort((a, b) => b - a)[0];
+      const lastUsed = lastAlloc;
       
       if (!lastUsed || lastUsed < thresholdDate) {
         const diffTime = Math.abs(new Date() - (lastUsed || asset.createdAt));

@@ -43,7 +43,8 @@ const AssetsPage = () => {
     assetTag: '',
     categoryId: '',
     status: 'AVAILABLE',
-    location: ''
+    location: '',
+    customFields: {}
   });
 
   // Fetch inventory list and categories dropdown
@@ -99,7 +100,8 @@ const AssetsPage = () => {
         categoryId: formData.categoryId,
         status: formData.status,
         location: formData.location || 'Main HQ',
-        condition: 'Good' // Database default required field
+        condition: 'Good', // Database default required field
+        customFields: formData.customFields || {}
       };
 
       const response = await assetApi.createAsset(payload);
@@ -111,7 +113,8 @@ const AssetsPage = () => {
           assetTag: '',
           categoryId: '',
           status: 'AVAILABLE',
-          location: ''
+          location: '',
+          customFields: {}
         });
         setView('list');
         fetchData();
@@ -494,7 +497,11 @@ const AssetsPage = () => {
                 </label>
                 <select 
                   value={formData.categoryId}
-                  onChange={(e) => setFormData(prev => ({ ...prev, categoryId: e.target.value }))}
+                  onChange={(e) => setFormData(prev => ({ 
+                    ...prev, 
+                    categoryId: e.target.value,
+                    customFields: {}
+                  }))}
                   className="w-full px-3.5 py-2 border border-slate-200 bg-white rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 cursor-pointer text-slate-700"
                   required
                 >
@@ -504,6 +511,92 @@ const AssetsPage = () => {
                   ))}
                 </select>
               </div>
+
+              {/* Dynamic Custom Fields */}
+              {formData.categoryId && dbCategories.find(c => c.id === formData.categoryId)?.fields?.map((field) => {
+                const fieldName = field.name;
+                const fieldType = field.type;
+                const isRequired = !!field.required;
+                
+                return (
+                  <div key={fieldName} className="flex flex-col gap-1.5 p-3.5 bg-slate-50/50 border border-slate-100 rounded-xl">
+                    {fieldType === 'BOOLEAN' ? (
+                      <div className="flex items-center gap-2.5 py-1">
+                        <input
+                          type="checkbox"
+                          id={`custom-${fieldName}`}
+                          checked={!!formData.customFields?.[fieldName]}
+                          onChange={(e) => setFormData(prev => ({
+                            ...prev,
+                            customFields: {
+                              ...prev.customFields,
+                              [fieldName]: e.target.checked
+                            }
+                          }))}
+                          className="rounded border-slate-300 text-blue-600 focus:ring-blue-500/20 h-4 w-4 cursor-pointer"
+                        />
+                        <label htmlFor={`custom-${fieldName}`} className="text-xs font-bold text-slate-700 cursor-pointer select-none">
+                          {fieldName} {isRequired && <span className="text-rose-500">*</span>}
+                        </label>
+                      </div>
+                    ) : (
+                      <>
+                        <label htmlFor={`custom-${fieldName}`} className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                          {fieldName} {isRequired && <span className="text-rose-500">*</span>}
+                        </label>
+                        {fieldType === 'NUMBER' ? (
+                          <input
+                            type="number"
+                            id={`custom-${fieldName}`}
+                            placeholder={`Enter ${fieldName.toLowerCase()}...`}
+                            value={formData.customFields?.[fieldName] ?? ''}
+                            onChange={(e) => setFormData(prev => ({
+                              ...prev,
+                              customFields: {
+                                ...prev.customFields,
+                                [fieldName]: e.target.value === '' ? '' : Number(e.target.value)
+                              }
+                            }))}
+                            className="w-full px-3.5 py-2 border border-slate-200 bg-white rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 transition-all text-slate-700"
+                            required={isRequired}
+                          />
+                        ) : fieldType === 'DATE' ? (
+                          <input
+                            type="date"
+                            id={`custom-${fieldName}`}
+                            value={formData.customFields?.[fieldName] ?? ''}
+                            onChange={(e) => setFormData(prev => ({
+                              ...prev,
+                              customFields: {
+                                ...prev.customFields,
+                                [fieldName]: e.target.value
+                              }
+                            }))}
+                            className="w-full px-3.5 py-2 border border-slate-200 bg-white rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 transition-all text-slate-700"
+                            required={isRequired}
+                          />
+                        ) : (
+                          <input
+                            type="text"
+                            id={`custom-${fieldName}`}
+                            placeholder={`Enter ${fieldName.toLowerCase()}...`}
+                            value={formData.customFields?.[fieldName] ?? ''}
+                            onChange={(e) => setFormData(prev => ({
+                              ...prev,
+                              customFields: {
+                                ...prev.customFields,
+                                [fieldName]: e.target.value
+                              }
+                            }))}
+                            className="w-full px-3.5 py-2 border border-slate-200 bg-white rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 transition-all text-slate-700"
+                            required={isRequired}
+                          />
+                        )}
+                      </>
+                    )}
+                  </div>
+                );
+              })}
 
               {/* Status */}
               <div className="flex flex-col gap-1.5">

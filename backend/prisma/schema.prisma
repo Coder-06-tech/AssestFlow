@@ -251,6 +251,7 @@ enum AllocationStatus {
 }
 
 enum AuditAssetStatus {
+  PENDING
   VERIFIED
   MISSING
   DAMAGED

@@ -409,10 +409,10 @@ exports.googleLogin = async (req, res, next) => {
     await prisma.activityLog.create({
       data: {
         id: crypto.randomUUID(),
-        userId: dbToken.userId,
-        action: 'PASSWORD_RESET',
-        module: 'ORGANIZATION',
-        details: `Password reset successfully for user ${dbToken.user.email}.`
+        userId: user.id,
+        action: 'USER_LOGIN',
+        module: 'AUTHENTICATION',
+        details: `User ${user.name} (${user.email}) logged in successfully via Google Sign-In.`
       }
     });
 

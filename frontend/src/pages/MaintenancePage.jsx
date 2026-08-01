@@ -342,7 +342,7 @@ const MaintenancePage = () => {
                   </div>
                   <div className="pt-1.5">
                     <button
-                      onClick={() => handleUpdateStatus(ticket.id, 'IN_PROGRESS', ticket.technicianAssigned)}
+                      onClick={() => handleUpdateStatus(ticket.id, 'IN_PROGRESS')}
                       className="w-full flex items-center justify-center gap-1 py-1.5 bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200 rounded-lg text-[10px] font-bold transition-all"
                     >
                       <Play size={12} />
